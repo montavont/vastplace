@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Available files</title>   
+    </head>
+    <body>
+	{% for f in fileList %}
+		<li>
+			{{ f.filename }}	-	{{ f.length }}	-	<a href="delete/{{f.id}}">delete</a>	<a href="download/{{f.id}}">download</a> 
+    		</li>
+	{% endfor %}
+    </body>
+</html>
