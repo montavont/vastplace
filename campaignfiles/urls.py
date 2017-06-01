@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'content', views.stored_files, name='content'),
     url(r'delete/(?P<fileId>\w+)$', views.delete, name='delete'),
     url(r'download/(?P<fileId>\w+)$', views.download, name='download'),
+    url(r'map/(?P<fileId>\w+)$', views.viewmap, name='map'),
 ]

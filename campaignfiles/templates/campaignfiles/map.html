@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Trace File Map display</title>   
+    	<link rel="stylesheet" href="https://openlayers.org/en/v4.1.1/css/ol.css" type="text/css">
+	    <style>
+	      .map {
+	        height: 400px;
+	        width: 100%;
+	      }
+	</style>
+	<script src="https://openlayers.org/en/v4.1.1/build/ol.js" type="text/javascript"></script>
+    </head>
+  <body>
+    <h2>Trace Map</h2>
+
+
+    <div id="map" class="map"></div>
+    <script type="text/javascript">
+
+      var js_points = [ 
+	{% for p in points %}
+        	new ol.proj.fromLonLat({{p}}),
+	{% endfor %}
+      ];
+
+      var lineFeature = new ol.Feature(
+          new ol.geom.LineString(js_points));
+
+      var map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          }),
+	  new ol.layer.Vector({
+            source: new ol.source.Vector({
+              features: [lineFeature]
+          	})
+	  })
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat({{ points.0 }}),
+          zoom: 10
+        })
+      });
+
+    </script>
+  </body>
+</html>
