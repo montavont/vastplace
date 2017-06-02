@@ -10,5 +10,9 @@
 			{{ f.filename }}	-	{{ f.length }}	-	<a href="delete/{{f.id}}">delete</a>	<a href="download/{{f.id}}">download</a> <a href="map/{{f.id}}">map</a> 
     		</li>
 	{% endfor %}
+        <form action="upload" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p><input type="submit" value="Upload" /> <input type="file" name="file" /></p>
+        </form>
     </body>
 </html>

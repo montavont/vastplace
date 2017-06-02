@@ -6,7 +6,7 @@
     	<link rel="stylesheet" href="https://openlayers.org/en/v4.1.1/css/ol.css" type="text/css">
 	    <style>
 	      .map {
-	        height: 400px;
+	        height: 600px;
 	        width: 100%;
 	      }
 	</style>
@@ -15,6 +15,13 @@
   <body>
     <h2>Trace Map</h2>
 
+    <form action="delete/{{ id }}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p><input type="submit" value="Delete Trace"/></p>
+    </form>
+    <form action="content" method="get" enctype="multipart/form-data">
+            <p><input type="submit" value="Return"/></p>
+    </form>
 
     <div id="map" class="map"></div>
     <script type="text/javascript">
@@ -36,16 +43,23 @@
           }),
 	  new ol.layer.Vector({
             source: new ol.source.Vector({
-              features: [lineFeature]
+                features: [lineFeature],
+            }),
+	    style: new ol.style.Style({
+          	stroke: new ol.style.Stroke({
+	            color: 'blue',
+        	    width: 3
           	})
-	  })
+            })
+            })
         ],
         view: new ol.View({
           center: ol.proj.fromLonLat({{ points.0 }}),
-          zoom: 10
+          zoom: 17
         })
       });
 
     </script>
+
   </body>
 </html>

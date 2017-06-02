@@ -16,8 +16,7 @@ import threading
 from threading import Thread
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the campaign file index.")
-
+    return HttpResponse("Nothing to see here yet.")
 
 def upload_file(request):
     if request.method == 'POST':
@@ -26,10 +25,11 @@ def upload_file(request):
 	    fileId = handle_uploaded_file(request.FILES['file'])
 	    #t = threading.Thread(target=handle_uploaded_file, args = ([request.FILES['file']]))
 	    #t.start()
-            return HttpResponseRedirect('/campaignfiles/map/' + fileId)
+            return HttpResponseRedirect('/campaignfiles/map/' + str(fileId))
     else:
-        form = UploadFileForm()
-    return render(request, 'campaignfiles/upload.html', {'form': form})
+            return HttpResponseRedirect('/campaignfiles/content')
+            #form = UploadFileForm()
+    #return render(request, 'campaignfiles/upload.html', {'form': form})
 
 def handle_uploaded_file(inputFile):
 	client = MongoClient()
@@ -41,7 +41,7 @@ def handle_uploaded_file(inputFile):
 		grid_in.write(ch)
 	grid_in.close() 
 
-	return grid_in._id
+	return ObjectId(grid_in._id)
 
 def stored_files(request):
 	client = MongoClient()
@@ -81,7 +81,7 @@ def viewmap(request, fileId):
 
 		outF = open('/tmp/mongotest', 'w')
 		line = traceFile.readline()
-		while line != "":
+		while len(line) > 0:
 			outF.write(line)
 			line = traceFile.readline()
 
