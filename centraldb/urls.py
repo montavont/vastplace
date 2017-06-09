@@ -19,4 +19,5 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^campaignfiles/', include('campaignfiles.urls')),
+    url(r'^mapper/', include('mapper.urls')),
 ]
