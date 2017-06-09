@@ -3,14 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title>Trace File Map display</title>   
-    	<link rel="stylesheet" href="https://openlayers.org/en/v4.1.1/css/ol.css" type="text/css">
-	    <style>
-	      .map {
-	        height: 600px;
-	        width: 100%;
-	      }
-	</style>
-	<script src="https://openlayers.org/en/v4.1.1/build/ol.js" type="text/javascript"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     </head>
   <body>
     <h2>Trace Map</h2>
@@ -23,43 +16,11 @@
             <p><input type="submit" value="Return"/></p>
     </form>
 
-    <div id="map" class="map"></div>
-    <script type="text/javascript">
+	<object style="overflow:hidden;" width="1200" height="650" type="text/html" data="/mapper/map/{{ id }}">
 
-      var js_points = [ 
-	{% for p in points %}
-        	new ol.proj.fromLonLat({{p}}),
-	{% endfor %}
-      ];
+	<p>No Map</p>
+	</object>
 
-      var lineFeature = new ol.Feature(
-          new ol.geom.LineString(js_points));
-
-      var map = new ol.Map({
-        target: 'map',
-        layers: [
-          new ol.layer.Tile({
-            source: new ol.source.OSM()
-          }),
-	  new ol.layer.Vector({
-            source: new ol.source.Vector({
-                features: [lineFeature],
-            }),
-	    style: new ol.style.Style({
-          	stroke: new ol.style.Stroke({
-	            color: 'blue',
-        	    width: 3
-          	})
-            })
-            })
-        ],
-        view: new ol.View({
-          center: ol.proj.fromLonLat({{ points.0 }}),
-          zoom: 17
-        })
-      });
-
-    </script>
 
   </body>
 </html>
