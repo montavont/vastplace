@@ -25,7 +25,9 @@ SECRET_KEY = 'a_e8y$8ph97o99*8$&pd3zb@aij&2#wukul$w_i_)1&#tdqgyd'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+	"[2001:660:7301:51:5054:ff:fe18:7479]"
+]
 
 
 # Application definition
@@ -77,8 +79,9 @@ WSGI_APPLICATION = 'centraldb.wsgi.application'
 
 DATABASES = {
     'default': {
-      'ENGINE' : 'django_mongodb_engine',
-      'NAME' : 'wi2meCentral_dj_database'
+      #'ENGINE' : 'django_mongodb_engine',
+      'ENGINE': 'django.db.backends.sqlite3',
+      'NAME' : 'wi2meCentral_db_database.sqlite'
     }
 }
 
