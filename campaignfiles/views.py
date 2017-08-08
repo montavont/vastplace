@@ -56,12 +56,16 @@ def download(request, fileId):
 		return response
 	else:
 		raise HttpResponseNotFound('<h1>File not found</h1>')
+
 def delete(request, fileId):
 	client = MongoClient()
 	db = client.trace_database
 	fs = GridFS(db)
 	if fs.exists(_id=ObjectId(fileId)):
 		fs.delete(ObjectId(fileId))
+
+	point_db = client.point_database
+	point_db.sensors.delete_many({"sourceId":fileId})
 		
         return HttpResponseRedirect('/campaignfiles/content')
 

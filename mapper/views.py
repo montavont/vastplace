@@ -35,14 +35,18 @@ def populatePointDatabase(fileId):
 	point_db = client.point_database
 	
 	parser = sqlite_parser('/tmp/mongo_tmpfile' + fileId)
-	#conn = sqlite3.connect('/tmp/mongo_tmpfile' + fileId)
-	#c = conn.cursor()
-	#for u, v in c.execute('SELECT Longitude, Latitude from TRACE').fetchall():
-	for u, v in parser.getPoints():
-		if 0 not in (u, v):
-			point_db.points.insert_one({"sourceId":fileId, 'lon':u, 'lat':v})
+	for ts, lat, lon in parser.getGPSLocationEvents():
+		if 0 not in (lat, lon):
+			point_db.sensors.insert_one({
+				"sourceId":fileId,
+    				"sensorName" : "wi2meR",
+				"sensorID" : "IMEI",
+    				"vTimestamp" : float(ts)/1000,
+				"tstype" : "epoch",
+				"sensorType" : "GPS",
+    				"sensorValue" : (lat, lon)
+				})
 
-	#conn.close()
 	outF.close()
 
 	file_db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.processed': 1}})
@@ -58,8 +62,8 @@ def viewmap(request, fileId):
 		traceFile = fs.get(ObjectId(fileId))
 		if traceFile.metadata["processed"]:
 			#extract points
-			point_collection = client.point_database.points.find({'sourceId':fileId})
-			points = [[u['lon'], u['lat']] for u in point_collection]
+			point_collection = client.point_database.sensors.find({'sourceId':fileId, 'sensorType':"GPS"})
+			points = [u['sensorValue'][::-1] for u in point_collection] #OpenLayers uses Lon, Lat order
 			response = render(request, 'mapper/map.html', {'points': points, 'id':fileId})
 		else:
 	        	t = threading.Thread(target=populatePointDatabase, args = ([fileId]))

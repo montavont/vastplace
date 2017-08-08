@@ -84,13 +84,11 @@ class sqlite_parser:
 		elif len(sessionStarts) == 1:
 			retval.append((self.getStartTime(), self.getEndTime()))
 
-		print retval
 		return retval
 
 	"""
 
 	############################### Geolocalisation related functions
-
 	#minimal and maximal latitude ant longitude in order to delimitate the place the mesurements took place in
 	#The expected order is [lat_min, lat_max, long_min, long_max]
 	"""def getExtremeCoordinates(self):
@@ -147,9 +145,23 @@ class sqlite_parser:
 			if noZeros and latitude * longitude == 0:
 				continue
 
-			Points.append((longitude, latitude))
+			Points.append((latitude, longitude))
 
-		print len(Points)
+		return Points
+
+	#Get the GPS coordinates of points contained in a certain timerange (or all of them)
+	def getGPSLocationEvents(self, noZeros = True):
+		Points = [] 
+
+		c = self.conn.cursor()
+
+		for ts, latitude ,longitude in c.execute('SELECT timestamp, latitude, longitude from Trace t, ExternalEvent e where t.id = e.TraceId and e.event = "NEW_LOCATION"').fetchall():
+
+			if noZeros and latitude * longitude == 0:
+				continue
+
+			Points.append((ts, latitude, longitude))
+
 		return Points
 
 	############################### Access point discovery related functions
