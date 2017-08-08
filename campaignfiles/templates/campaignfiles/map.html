@@ -8,8 +8,7 @@
   <body>
     <h2>Trace Map</h2>
 
-    <form action="delete/{{ id }}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
+    <form action="/campaignfiles/map/delete/{{ id }}" method="get" enctype="multipart/form-data">
             <p><input type="submit" value="Delete Trace"/></p>
     </form>
     <form action="content" method="get" enctype="multipart/form-data">
