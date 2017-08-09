@@ -22,7 +22,7 @@ def upload_file(request):
 	    fileId = handle_uploaded_file(request.FILES['file'])
 	    #t = threading.Thread(target=handle_uploaded_file, args = ([request.FILES['file']]))
 	    #t.start()
-            response = HttpResponseRedirect('/campaignfiles/map/' + str(fileId))
+            response = HttpResponseRedirect('/campaignfiles/details/' + str(fileId))
     else:
             response = HttpResponseRedirect('/campaignfiles/content')
 
@@ -72,5 +72,28 @@ def delete(request, fileId):
 
 
 
-def viewmap(request, fileId):
-	return render(request, 'campaignfiles/map.html', {'id':fileId})
+def viewdetails(request, fileId):
+	responseData = {'id':fileId}
+
+	client = MongoClient()
+	db = client.trace_database
+	fs = GridFS(db)
+	traceFile = fs.get(ObjectId(fileId))
+
+	for k in ['phoneuser', 'phoneId', 'notes']:
+		if k in traceFile.metadata:
+			responseData[k] = traceFile.metadata[k]
+
+	return render(request, 'campaignfiles/details.html', responseData)
+
+
+
+def edit(request, fileId):
+	client = MongoClient()
+	db = client.trace_database
+	for k in ['phoneuser', 'phoneId', 'notes']:
+		db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.' + k: request.POST[k]}})
+
+        return HttpResponseRedirect('/campaignfiles/content')
+
+
