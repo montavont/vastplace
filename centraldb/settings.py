@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'campaignfiles',	
     'mapper',
+    'wi2metools',
 ]
 
 MIDDLEWARE = [
