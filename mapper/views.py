@@ -11,8 +11,6 @@ import os
 import sqlite3
 import threading
 from threading import Thread
-
-
 from database_parser.sqlite_parser import sqlite_parser
 
 def populatePointDatabase(fileId):
@@ -23,7 +21,7 @@ def populatePointDatabase(fileId):
 
 
 	#Copy the original db file
-	outF = open('/tmp/mongo_tmpfile' + fileId, 'w')
+	outF = open('/tmp/mongo_tmpfile_' + fileId, 'w')
 	line = traceFile.readline()
 	while len(line) > 0:
 		outF.write(line)
@@ -34,7 +32,7 @@ def populatePointDatabase(fileId):
 	# Will be mved to a parser module
 	point_db = client.point_database
 	
-	parser = sqlite_parser('/tmp/mongo_tmpfile' + fileId)
+	parser = sqlite_parser('/tmp/mongo_tmpfile_' + fileId)
 	for ts, lat, lon in parser.getGPSLocationEvents():
 		if 0 not in (lat, lon):
 			point_db.sensors.insert_one({
@@ -46,11 +44,30 @@ def populatePointDatabase(fileId):
 				"sensorType" : "GPS",
     				"sensorValue" : (lat, lon)
 				})
+	file_db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.gps_processed': 1}})
 
-	outF.close()
 
-	file_db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.processed': 1}})
-	os.remove('/tmp/mongo_tmpfile' + fileId)
+	for ts, scanInd, bssid, ssid, channel, level, capabilities in parser.getScanResults():
+		point_db.wifiscanresults.insert_one({
+				"sourceId":fileId,
+    				"sensorName" : "wi2meR",
+				"sensorID" : "IMEI",
+    				"vTimestamp" : float(ts)/1000,
+				"tstype" : "epoch",
+				"sensorType" : "wifi scan result",
+    				"sensorValue" : {
+					"bssid" : bssid,
+					"ssid" : ssid,
+					"rssi" : level, 
+					"channel" : channel, 
+					"capabilities" : capabilities,
+					"scan index": scanInd,
+					},
+				})
+		
+	file_db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.scan_processed': 1}})
+	os.remove('/tmp/mongo_tmpfile_' + fileId)
+
 
 
 def viewmap(request, fileId):
@@ -60,11 +77,16 @@ def viewmap(request, fileId):
 	fs = GridFS(db)
 	if fs.exists(_id=ObjectId(fileId)):
 		traceFile = fs.get(ObjectId(fileId))
-		if traceFile.metadata["processed"]:
+		if client.point_database.sensors.count({'sourceId':fileId}) > 0:
 			#extract points
 			point_collection = client.point_database.sensors.find({'sourceId':fileId, 'sensorType':"GPS"})
 			points = [u['sensorValue'][::-1] for u in point_collection] #OpenLayers uses Lon, Lat order
-			response = render(request, 'mapper/map.html', {'points': points, 'id':fileId})
+			responseData = {'points': points, 'id':fileId}
+			if not traceFile.metadata["gps_processed"]: # processing unfinished, add a reload info
+				responseData['reload_action'] = "refresh"
+				responseData['reload_content'] = "2"
+			response = render(request, 'mapper/map.html', responseData)
+
 		else:
 	        	t = threading.Thread(target=populatePointDatabase, args = ([fileId]))
 			t.start()

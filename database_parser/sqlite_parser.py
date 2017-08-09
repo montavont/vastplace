@@ -164,6 +164,21 @@ class sqlite_parser:
 
 		return Points
 
+
+	def getScanResults(self):
+		retval = []
+		c = self.conn.cursor()
+
+		ScanAttempts = c.execute('SELECT id from Trace where type="WIFI_SCAN_RESULT"').fetchall()
+
+		for scanInd, res in enumerate(ScanAttempts):
+			for bssid, level, ssid, latitude, longitude, channel, capabilities, timestamp in c.execute('SELECT BSSID, level, ssid, latitude, longitude, channel, capabilities, timestamp from WifiScanResult s, WifiAP a, Trace t where s.TraceId=' + str(res[0]) + " and a.id = s.WifiAPId and t.id = s.TraceId").fetchall():
+				retval.append((timestamp, scanInd, bssid, ssid, channel, level, capabilities))
+
+		return retval
+
+
+
 	############################### Access point discovery related functions
 
 	# get a list of list of scan results (one list for each attempt)
