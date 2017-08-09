@@ -66,6 +66,7 @@ def delete(request, fileId):
 
 	point_db = client.point_database
 	point_db.sensors.delete_many({"sourceId":fileId})
+	point_db.wifiscanresults.delete_many({"sourceId":fileId})
 		
         return HttpResponseRedirect('/campaignfiles/content')
 
