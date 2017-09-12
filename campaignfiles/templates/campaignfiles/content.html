@@ -7,7 +7,7 @@
     <body>
 	{% for f in fileList %}
 		<li>
-			{{ f.filename }}	-	{{ f.length }}	-	<a href="delete/{{f.id}}">delete</a>	<a href="download/{{f.id}}">download</a> <a href="details/{{f.id}}">details</a>  <a href="/wi2metools/metricSelection/{{f.id}}">plot</a> 
+			{{ f.filename }}	-	{{ f.length }}	-	<a href="/campaignfiles/delete/{{f.id}}">delete</a>	<a href="/campaignfiles/download/{{f.id}}">download</a> <a href="/campaignfiles/details/{{f.id}}">details</a>  <a href="/wi2metools/metricSelection/{{f.id}}">plot</a> 
     		</li>
 	{% endfor %}
         <form action="upload" method="post" enctype="multipart/form-data">
