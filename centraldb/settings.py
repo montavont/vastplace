@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'campaignfiles',	
     'mapper',
     'wi2metools',
+    'mobilelora',
 ]
 
 MIDDLEWARE = [
