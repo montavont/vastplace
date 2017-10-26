@@ -34,7 +34,7 @@ def handle_uploaded_file(inputFile):
 	db = client.trace_database
 	fs = GridFSBucket(db)
 	
-	grid_in = fs.open_upload_stream(str(inputFile), metadata={"contentType": "wi2me_database", "processed":0})
+	grid_in = fs.open_upload_stream(str(inputFile), metadata={"source_processed":0})
 	for ch in  inputFile.chunks():
 		grid_in.write(ch)
 	grid_in.close() 
@@ -118,6 +118,7 @@ def edit(request, fileId):
 
 	db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.sourceTypes' : enabled_types}})
 
-        return HttpResponseRedirect('/campaignfiles/content')
+        #return HttpResponseRedirect('/campaignfiles/content')
+	return viewdetails(request, fileId)
 
 
