@@ -3,4 +3,5 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-# Create your models here.
+class SourceType(models.Model):
+	sourceType = models.CharField(max_length=30, unique=True)

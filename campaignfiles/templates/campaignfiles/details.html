@@ -12,6 +12,11 @@
             {% csrf_token %}
 	User: <input type="text" name="phoneuser" value = "{{ phoneuser }}"><br>
 	Phone ID: <input type="text" name="phoneId" value="{{ phoneId }}"><br>
+        Source Type :
+	{% for f in sourceTypes %}
+	    <input type="checkbox" name = "{{ f.name }}" {{ f.enabled }}>{{ f.name }}
+        {% endfor %}
+	<br>
 	Notes : <br>
     	<textarea id="notes" name="notes" rows="4" cols="50" form="traceeditform">{{notes}}</textarea> 
         <p><input type="submit" value="Save"/></p>

@@ -10,6 +10,7 @@ from bson.objectid import ObjectId
 from gridfs import GridFS, GridFSBucket
 
 from forms import UploadFileForm
+from models import SourceType
 
 def index(request):
     return HttpResponse("Nothing to see here yet.")
@@ -84,6 +85,18 @@ def viewdetails(request, fileId):
 		if k in traceFile.metadata:
 			responseData[k] = traceFile.metadata[k]
 
+	responseData['sourceTypes']= []
+	enabled_types = []
+	if 'sourceTypes' in traceFile.metadata:
+		enabled_types = traceFile.metadata['sourceTypes']
+
+	all_types = SourceType.objects.values_list('sourceType', flat = True)
+	for t in all_types:
+		if t in enabled_types:
+			responseData['sourceTypes'].append({'name':t, 'enabled':"checked"})
+		else:
+			responseData['sourceTypes'].append({'name':t, 'enabled':''})
+
 	return render(request, 'campaignfiles/details.html', responseData)
 
 
@@ -91,8 +104,19 @@ def viewdetails(request, fileId):
 def edit(request, fileId):
 	client = MongoClient()
 	db = client.trace_database
+	
+
 	for k in ['phoneuser', 'phoneId', 'notes']:
 		db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.' + k: request.POST[k]}})
+	
+	types = SourceType.objects.values_list('sourceType', flat = True)
+	enabled_types = []
+	for t in types:
+		if t in request.POST and 'on' in request.POST[t]:
+			enabled_types.append(t)
+
+
+	db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.sourceTypes' : enabled_types}})
 
         return HttpResponseRedirect('/campaignfiles/content')
 
