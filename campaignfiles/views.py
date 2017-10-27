@@ -23,8 +23,6 @@ def upload_file(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
 	    fileId = handle_uploaded_file(request.FILES['file'])
-	    #t = threading.Thread(target=handle_uploaded_file, args = ([request.FILES['file']]))
-	    #t.start()
             response = HttpResponseRedirect('/campaignfiles/details/' + str(fileId))
     else:
             response = HttpResponseRedirect('/campaignfiles/content')
@@ -62,17 +60,6 @@ def SourceProcessingProcess(fileId):
 	file_db.processing_lock.create_index("fileId", unique = True)
 	file_db.metric_lock.delete_one({'fileId':fileId })
 
-	#Copy the original db file
-	#outPath = '/tmp/mongo_tmpfile_' + fileId
-	#outF = open(outPath, 'w')
-	#line = traceFile.readline()
-	#while len(line) > 0:
-	#	outF.write(line)
-	#	line = traceFile.readline()
-	#outF.close()
-
-	# Iterate the content of original file 
-	# Will be mved to a parser module
 	point_db = client.point_database
 	
 	trace_types = []                                        
@@ -93,7 +80,6 @@ def SourceProcessingProcess(fileId):
 	
 
 	file_db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.source_processed': 1}})
-	#os.remove(outPath)
 
 	file_db.metric_lock.delete_one({'fileId':fileId })
 
@@ -101,7 +87,9 @@ def SourceProcessingProcess(fileId):
 def stored_files(request):
         client = MongoClient()
         db = client.trace_database
-        return render(request, 'campaignfiles/content.html', {'fileList': [{'id':f['_id'], " filename":f["filename"], "length":f["length"]} for f in db.fs.files.find()]})               
+        print [u['filename'] for u in db.fs.files.find()]
+        return render(request, 'campaignfiles/content.html', {'fileList': [{'id':f['_id'], "filename":f["filename"], "length":f["length"]} for f in db.fs.files.find()]})               
+
 def download(request, fileId):
         client = MongoClient()
         db = client.trace_database
