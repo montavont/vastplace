@@ -176,38 +176,9 @@ def edit(request, fileId):
 
 	#Trigger processings if types changed	
 	if reprocessSource:
-		db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.source_processed': 1}})
+		db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.source_processed': 0}})
 		p = Process(None, target=SourceProcessingProcess, args = ([fileId]))
 		p.start()
 
         return viewdetails(request, fileId)
 
-
-def viewmap(request, fileId):
-	response = None
-	client = MongoClient()
-	db = client.trace_database
-	fs = GridFS(db)
-	if fs.exists(_id=ObjectId(fileId)):
-		traceFile = fs.get(ObjectId(fileId))
-        	if 'sourceTypes' in traceFile.metadata and len(traceFile.metadata['sourceTypes']) > 0:
-			#This is done to avoid having two parrallel threads, but must be done better...
-			if client.point_database.sensors.count({'sourceId':fileId}) > 0:
-				#extract points
-				point_collection = client.point_database.sensors.find({'sourceId':fileId, 'sensorType':"GPS"})
-				points = [u['sensorValue'][::-1] for u in point_collection] #OpenLayers uses Lon, Lat order
-				responseData = {'points': points, 'id':fileId}
-				if not traceFile.metadata["source_processed"]: # processing unfinished, add a reload info
-					responseData['reload_action'] = "refresh"
-					responseData['reload_content'] = "2"
-				response = render(request, 'mapper/map.html', responseData)
-			else:
-	        		t = threading.Thread(target=populatePointDatabase, args = ([fileId]))
-				t.start()
-				response = render(request, 'mapper/wip.html')
-		else:
-			response = HttpResponseNotFound('<h1>No source Type specified. Select one and save.</h1>')
-	else:
-		response = HttpResponseNotFound('<h1>Source file not found</h1>')
-
-	return response

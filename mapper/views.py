@@ -25,7 +25,7 @@ def viewmap(request, fileId):
 		else:
 			point_collection = client.point_database.sensors.find({'sourceId':fileId, 'sensorType':"GPS"})
 			points = [u['sensorValue'][::-1] for u in point_collection] #OpenLayers uses Lon, Lat order
-			responseData = {'points': points, 'id':fileId}
+			responseData = {'trajectories':[{'points': points, 'id':fileId}]}
 			if not traceFile.metadata["source_processed"]: # processing unfinished, add a reload info
 				responseData['reload_action'] = "refresh"
 				responseData['reload_content'] = "2"

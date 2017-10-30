@@ -18,14 +18,66 @@
     <div id="map" class="map"></div>
     <script type="text/javascript">
 
-      var js_points = [ 
-	{% for p in points %}
-        	new ol.proj.fromLonLat({{p}}),
-	{% endfor %}
-      ];
+      {% for traj in trajectories %}
+	      var js_points = [ 
+		{% for p in traj.points %}
+	        	new ol.proj.fromLonLat({{p}}),
+		{% endfor %}
+	      ];
 
-      var lineFeature = new ol.Feature(
-          new ol.geom.LineString(js_points));
+	      var lineFeature = new ol.Feature(
+	          new ol.geom.LineString(js_points));
+
+      {% endfor %}
+		
+
+	var pointFeatures = [
+	{% for p in points %}
+		new ol.Feature({
+			'geometry':new ol.geom.Point(ol.proj.fromLonLat({{p.lonlat}})),
+	    		'style': '{{p.style}}',
+		}),
+	{% endfor %}
+	];
+
+
+
+  var pointStyles = {
+        'red': new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({color: 'red'}),
+          })
+        }),
+        'green': new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 10,
+            fill: new ol.style.Fill({color: 'green'}),
+          })
+        }),
+        'empty_blue': new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 10,
+            fill: new ol.style.Fill({color: '#00000000'}),
+            stroke: new ol.style.Stroke({
+	            color: 'blue',
+        	    width: 3
+          	})
+          })
+        })
+      };
+
+      var vectorSource = new ol.source.Vector({
+        features: pointFeatures,
+        wrapX: false
+      });
+      var vector = new ol.layer.Vector({
+        source: vectorSource,
+        style: function(feature) {
+          return pointStyles[feature.get('style')];
+        }
+      });
+
 
       var map = new ol.Map({
         target: 'map',
@@ -43,11 +95,12 @@
         	    width: 3
           	})
             })
-            })
+            }),
+	  vector
         ],
         view: new ol.View({
-          center: ol.proj.fromLonLat({{ points.0 }}),
-          zoom: 17
+          center: ol.proj.fromLonLat({{ trajectories.0.points.0 }}),
+          zoom: 16
         })
       });
 
