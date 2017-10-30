@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^campaignfiles/', include('campaignfiles.urls')),
     url(r'^mapper/', include('mapper.urls')),
     url(r'^wi2metools/', include('wi2metools.urls')),
+    url(r'^mobilelora/', include('mobilelora.urls')),
 ]
