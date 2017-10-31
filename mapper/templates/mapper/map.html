@@ -18,17 +18,16 @@
     <div id="map" class="map"></div>
     <script type="text/javascript">
 
-      {% for traj in trajectories %}
-	      var js_points = [ 
+
+	var lineFeatures = [
+        {% for traj in trajectories %}
+		new ol.Feature(new ol.geom.LineString([
 		{% for p in traj.points %}
 	        	new ol.proj.fromLonLat({{p}}),
 		{% endfor %}
-	      ];
-
-	      var lineFeature = new ol.Feature(
-	          new ol.geom.LineString(js_points));
-
-      {% endfor %}
+	        ])),
+        {% endfor %}
+	];
 		
 
 	var pointFeatures = [
@@ -87,7 +86,7 @@
           }),
 	  new ol.layer.Vector({
             source: new ol.source.Vector({
-                features: [lineFeature],
+                features: lineFeatures,
             }),
 	    style: new ol.style.Style({
           	stroke: new ol.style.Stroke({
