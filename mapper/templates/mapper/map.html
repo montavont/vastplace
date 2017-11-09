@@ -18,6 +18,7 @@
     <div id="map" class="map"></div>
     <script type="text/javascript">
 
+        var scaleLineControl = new ol.control.ScaleLine();
 
 	var lineFeatures = [
         {% for traj in trajectories %}
@@ -79,6 +80,13 @@
 
 
       var map = new ol.Map({
+	controls: ol.control.defaults({
+          attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+            collapsible: false
+          })
+        }).extend([
+          scaleLineControl
+        ]),
         target: 'map',
         layers: [
           new ol.layer.Tile({
