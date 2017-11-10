@@ -5,7 +5,6 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseNotFound
 
-from pymongo import MongoClient
 from bson.objectid import ObjectId
 from gridfs import GridFS, GridFSBucket
 
@@ -13,6 +12,8 @@ from forms import UploadFileForm
 from models import SourceType
 from multiprocessing import Process
 import importlib
+
+from storage import database
 
 def index(request):
     return HttpResponse("Nothing to see here yet.")
@@ -34,7 +35,7 @@ def upload_file(request):
 def handle_uploaded_file(inputFile):
 
 	#Store file in database as is
-	client = MongoClient()
+	client = database.getClient()
 	db = client.trace_database
 	fs = GridFSBucket(db)
 	
@@ -47,12 +48,13 @@ def handle_uploaded_file(inputFile):
 	p = Process(None, target=SourceProcessingProcess, args = ([grid_in._id]))
 	p.start()
 
+	client.close()
 
 	return ObjectId(grid_in._id)
 		
 #Trigger in order to convert a source into 
 def SourceProcessingProcess(fileId):
-	client = MongoClient()
+	client = database.getClient()
 	file_db = client.trace_database
 	fs = GridFS(file_db)
 	traceFile = fs.get(ObjectId(fileId))
@@ -82,29 +84,31 @@ def SourceProcessingProcess(fileId):
 	file_db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.source_processed': 1}})
 
 	file_db.metric_lock.delete_one({'fileId':fileId })
+	client.close()
 
 
 def stored_files(request):
-        client = MongoClient()
+        client = database.getClient()
         db = client.trace_database
-        print [u['filename'] for u in db.fs.files.find()]
-        return render(request, 'campaignfiles/content.html', {'fileList': [{'id':f['_id'], "filename":f["filename"], "length":f["length"]} for f in db.fs.files.find()]})               
+	responseData = {'fileList': [{'id':f['_id'], "filename":f["filename"], "length":f["length"]} for f in db.fs.files.find()]}
+	client.close()
+        return render(request, 'campaignfiles/content.html', responseData)
 
 def download(request, fileId):
-        client = MongoClient()
+        response = HttpResponseNotFound('<h1>File not found</h1>')
+        client = database.getClient()
         db = client.trace_database
         fs = GridFS(db)
         if fs.exists(_id=ObjectId(fileId)):
                 retfile = fs.get(ObjectId(fileId))
                 response = HttpResponse(retfile)
                 response['Content-Disposition'] = 'attachment; filename="' + retfile.filename + '"'
-		return response
-        else:
-                raise HttpResponseNotFound('<h1>File not found</h1>')
+	client.close()
+	return response
 
 
 def delete(request, fileId):
-        client = MongoClient()
+        client = database.getClient()
         db = client.trace_database
         fs = GridFS(db)
         if fs.exists(_id=ObjectId(fileId)):
@@ -114,6 +118,7 @@ def delete(request, fileId):
         point_db.sensors.delete_many({"sourceId":fileId})
         point_db.wifiscanresults.delete_many({"sourceId":fileId})
 
+	client.close()
         return HttpResponseRedirect('/campaignfiles/content')
 
 
@@ -123,7 +128,7 @@ def delete(request, fileId):
 def viewdetails(request, fileId):
 	responseData = {'id':fileId}
 
-	client = MongoClient()
+	client = database.getClient()
 	db = client.trace_database
 	fs = GridFS(db)
 	traceFile = fs.get(ObjectId(fileId))
@@ -144,12 +149,13 @@ def viewdetails(request, fileId):
 		else:
 			responseData['sourceTypes'].append({'name':t, 'enabled':''})
 
+	client.close()
 	return render(request, 'campaignfiles/details.html', responseData)
 
 
 
 def edit(request, fileId):
-        client = MongoClient()
+        client = database.getClient()
         db = client.trace_database
 	reprocessSource = False
 
@@ -179,6 +185,8 @@ def edit(request, fileId):
 		db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.source_processed': 0}})
 		p = Process(None, target=SourceProcessingProcess, args = ([fileId]))
 		p.start()
+
+	client.close()
 
         return viewdetails(request, fileId)
 

@@ -3,7 +3,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseNotFound
 from django.http import HttpResponse
-from pymongo import MongoClient
 from bson.objectid import ObjectId
 from gridfs import GridFS
 
@@ -13,9 +12,11 @@ import threading
 from threading import Thread
 
 
+from storage import database
+
 def viewmap(request, fileId):
 	response = None
-	client = MongoClient()
+	client = database.getClient()
 	db = client.trace_database
 	fs = GridFS(db)
 	if fs.exists(_id=ObjectId(fileId)):
@@ -33,4 +34,5 @@ def viewmap(request, fileId):
 	else:
 		response = HttpResponseNotFound('<h1>Source file not found</h1>')
 
+	client.close()
 	return response
