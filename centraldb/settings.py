@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'mapper',
     'wi2metools',
     'mobilelora',
+    'staticlora',
 ]
 
 MIDDLEWARE = [
