@@ -23,4 +23,5 @@ urlpatterns = [
     url(r'^wi2metools/', include('wi2metools.urls')),
     url(r'^mobilelora/', include('mobilelora.urls')),
     url(r'^staticlora/', include('staticlora.urls')),
+    url(r'^mobrel/', include('mobrel.urls')),
 ]

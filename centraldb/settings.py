@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'wi2metools',
     'mobilelora',
     'staticlora',
+    'mobrel',
 ]
 
 MIDDLEWARE = [
