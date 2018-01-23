@@ -24,4 +24,5 @@ urlpatterns = [
     url(r'^mobilelora/', include('mobilelora.urls')),
     url(r'^staticlora/', include('staticlora.urls')),
     url(r'^mobrel/', include('mobrel.urls')),
+    url(r'^ambassadair/', include('ambassadair.urls')),
 ]

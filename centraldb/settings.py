@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'mobilelora',
     'staticlora',
     'mobrel',
+    'ambassadair',
 ]
 
 MIDDLEWARE = [
