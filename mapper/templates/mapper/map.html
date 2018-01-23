@@ -41,7 +41,6 @@
 	];
 
 
-
   var pointStyles = {
         'red': new ol.style.Style({
           image: new ol.style.Circle({
@@ -78,6 +77,66 @@
         }
       });
 
+	var tileStyle = new ol.style.Style({
+        text: new ol.style.Text({
+          font: 'bold 11px "Open Sans", "Arial Unicode MS", "sans-serif"',
+          placement: 'line',
+          fill: new ol.style.Fill({
+            color: 'black'
+          })
+        }),
+        fill: new ol.style.Fill({ // Empty fill, the content is filled by the feature's color property
+          }),
+	});
+
+      var geojsonObject = {
+        'type': 'FeatureCollection',
+        'crs': {
+          'type': 'name',
+          'properties': {
+            'name': 'EPSG:3857'
+          }
+        },
+        'features': [
+        {% for points in rectangles %}
+        {
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Polygon',
+            'coordinates': [[
+				new ol.proj.fromLonLat([{{points.0}}, {{points.2}}]),
+				new ol.proj.fromLonLat([{{points.1}}, {{points.2}}]),
+				new ol.proj.fromLonLat([{{points.1}}, {{points.3}}]),
+				new ol.proj.fromLonLat([{{points.0}}, {{points.3}}]),
+				new ol.proj.fromLonLat([{{points.0}}, {{points.2}}]),
+			]],
+          },
+	   "properties":{
+                "name":"{{points.4}}",
+                "color":"{{points.5}}",
+		}
+        },
+	{% endfor %}
+	]
+      };
+
+      var source = new ol.source.Vector({
+        features: (new ol.format.GeoJSON()).readFeatures(geojsonObject)
+      });
+
+      var layer = new ol.layer.Vector({
+        source: source,
+        //style: styles
+	style: function(feature) {
+            tileStyle.getText().setText(feature.get('name'));
+            tileStyle.getFill().setColor(feature.get('color'));
+            return tileStyle;
+          }
+      });
+
+
+
+
 
       var map = new ol.Map({
 	controls: ol.control.defaults({
@@ -103,7 +162,8 @@
           	})
             })
             }),
-	  vector
+	  vector,
+	  layer
         ],
         view: new ol.View({
           center: ol.proj.fromLonLat({{ trajectories.0.points.0 }}),
