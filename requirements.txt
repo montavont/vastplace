@@ -1,2 +1,13 @@
 django==1.11.6
 celery
+djangorestframework
+bson
+pymongo
+mongobox
+numpy
+cairocffi
+beautifulsoup
+svgwrite
+matplotlib
+statsmodels
+Pillow
