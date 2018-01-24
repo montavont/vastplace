@@ -20,11 +20,14 @@ def index(request):
 
 def upload_file(request):
     response = None
+    fileIds = []
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-	    fileId = handle_uploaded_file(request.FILES['file'])
-            response = HttpResponseRedirect('/campaignfiles/details/' + str(fileId))
+		for upFile in request.FILES.getlist('file'):
+			fileId = handle_uploaded_file(upFile)
+			fileIds.append(fileId)
+            	response = HttpResponseRedirect('/campaignfiles/details/' + '-'.join(str(fId) for fId in fileIds))
     else:
             response = HttpResponseRedirect('/campaignfiles/content')
 
@@ -151,6 +154,16 @@ def viewdetails(request, fileId):
 
 	client.close()
 	return render(request, 'campaignfiles/details.html', responseData)
+
+
+
+def viewmultipledetails(request, fileIds):
+	responseData = {'ids':[]}
+	for fileId in fileIds.split('-'):
+		if len(fileId) > 0:
+			responseData['ids'].append(fileId)
+
+	return render(request, 'campaignfiles/multidetails.html', responseData)
 
 
 
