@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Available files</title>   
+    </head>
+    <body>
+	{% for id in ids %}
+	<object style="overflow:hidden;" width="1200" height="650" type="text/html" data="/campaignfiles/details/{{ id }}">
+	<p>File not found</p>
+	</object>
+	{% endfor %}
+  </body>
+</html>
