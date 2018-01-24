@@ -24,7 +24,7 @@ def viewmap(request, fileId):
 		if 'sourceTypes' not in traceFile.metadata or len(traceFile.metadata['sourceTypes']) == 0:
 			response = HttpResponse('<h1>Pick at least 1 source type to generate a map</h1>')
 		else:
-			point_collection = client.point_database.sensors.find({'sourceId':fileId, 'sensorType':"GPS"})
+			point_collection = client.point_database.sensors.find({'sourceId':ObjectId(fileId), 'sensorType':"GPS"})
 			points = [u['sensorValue'][::-1] for u in point_collection] #OpenLayers uses Lon, Lat order
 			responseData = {'trajectories':[{'points': points, 'id':fileId}]}
 			if not traceFile.metadata["source_processed"]: # processing unfinished, add a reload info
