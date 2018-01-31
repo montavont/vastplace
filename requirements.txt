@@ -11,3 +11,4 @@ svgwrite
 matplotlib
 statsmodels
 Pillow
+pycurl

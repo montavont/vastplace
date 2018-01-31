@@ -34,3 +34,57 @@ def osm_tile_number_to_latlon(xtile, ytile, zoom):
 	lat_deg = math.degrees(lat_rad)
 	return (lat_deg, lon_deg)
 
+
+
+
+def osm_get_raw_data(lat_min, lon_min, lat_max, lon_max):
+    import pycurl
+    from StringIO import StringIO
+
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(c.URL, 'http://api.openstreetmap.org/api/0.6/map?bbox=%f,%f,%f,%f' % (lon_min,lat_min,lon_max,lat_max))
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
+
+    body = buffer.getvalue()
+    return body
+
+
+from BeautifulSoup import BeautifulSoup
+
+# Extract the GPS coordinates of the roads
+# roadSel parameter to pass a list of target road names
+# printNames optionnal parameter to print all the detected roads
+def extract_roads_from_osm_xml(xml):
+	soup = BeautifulSoup(xml)
+	Roads = []
+
+	Coordinates = {}
+
+	for point in soup.osm.findAll('node'):
+		Coordinates[point['id']] = (float(point['lat']), float(point['lon']))
+
+	for way in soup.osm.findAll(lambda nd : nd.name=="way" and nd.findAll(k='highway')):
+		name = ""
+		road = []
+
+		nodes = way.findAll('nd')
+
+		#Get the road Name
+		for u in nodes[-1].findAll('tag'):
+			if u['k'] == 'name':
+				name =  u['v']
+
+		for node in nodes:
+			road.append(Coordinates[node['ref']])
+		Roads.append(road)
+	return Roads
+
+
+def osm_get_streets(lat_min, lon_min, lat_max, lon_max):
+    osm_xml = osm_get_raw_data(lat_min, lon_min, lat_max, lon_max)
+    return extract_roads_from_osm_xml(osm_xml)
+
+
