@@ -10,3 +10,5 @@ beautifulsoup
 svgwrite
 matplotlib
 statsmodels
+Pillow
+pycurl
