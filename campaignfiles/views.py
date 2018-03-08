@@ -41,11 +41,11 @@ def handle_uploaded_file(inputFile):
 	client = database.getClient()
 	db = client.trace_database
 	fs = GridFSBucket(db)
-	
+
 	grid_in = fs.open_upload_stream(str(inputFile), metadata={"source_processed":0})
 	for ch in  inputFile.chunks():
 		grid_in.write(ch)
-	grid_in.close() 
+	grid_in.close()
 
 	#Process file in order to convert its data to standard format
 	p = Process(None, target=SourceProcessingProcess, args = ([grid_in._id]))
@@ -54,8 +54,8 @@ def handle_uploaded_file(inputFile):
 	client.close()
 
 	return ObjectId(grid_in._id)
-		
-#Trigger in order to convert a source into 
+
+#Trigger in order to convert a source into
 def SourceProcessingProcess(fileId):
 	client = database.getClient()
 	file_db = client.trace_database
@@ -66,9 +66,9 @@ def SourceProcessingProcess(fileId):
 	file_db.metric_lock.delete_one({'fileId':fileId })
 
 	point_db = client.point_database
-	
-	trace_types = []                                        
-        if 'sourceTypes' in traceFile.metadata:                                
+
+	trace_types = []
+        if 'sourceTypes' in traceFile.metadata:
                 trace_types = traceFile.metadata['sourceTypes']
 	all_types = SourceType.objects.all()
 	parsers = []
@@ -82,7 +82,7 @@ def SourceProcessingProcess(fileId):
 	for parser in parsers:
 		for event in  parser.getEvents():
 			point_db.sensors.insert_one(event)
-	
+
 
 	file_db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.source_processed': 1}})
 
@@ -93,7 +93,22 @@ def SourceProcessingProcess(fileId):
 def stored_files(request):
         client = database.getClient()
         db = client.trace_database
-	responseData = {'fileList': [{'id':f['_id'], "filename":f["filename"], "length":f["length"]} for f in db.fs.files.find()]}
+        fs = GridFS(db)
+	responseData = {'fileList': []}
+
+        for traceFile in fs.find():
+            types = "none"
+            if 'sourceTypes' in traceFile.metadata:
+                types = ','.join([t for t in traceFile.metadata['sourceTypes']])
+	    responseData['fileList'].append(
+            {
+                    'id':traceFile._id,
+                    "filename":traceFile.filename,
+                    "length":traceFile.length,
+                    "types":types,
+                    }
+            )
+
 	client.close()
         return render(request, 'campaignfiles/content.html', responseData)
 
@@ -182,7 +197,7 @@ def edit(request, fileId):
 	fs = GridFS(db)
 	traceFile = fs.get(ObjectId(fileId))
 	previous_types = []
-        if 'sourceTypes' in traceFile.metadata:                                
+        if 'sourceTypes' in traceFile.metadata:
                 previous_types = traceFile.metadata['sourceTypes']
         enabled_types = []
         for t in types:
@@ -191,9 +206,9 @@ def edit(request, fileId):
 				reprocessSource = True
                         enabled_types.append(t)
 
-        db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.sourceTypes' : enabled_types}})                                                                           
+        db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.sourceTypes' : enabled_types}})
 
-	#Trigger processings if types changed	
+	#Trigger processings if types changed
 	if reprocessSource:
 		db.fs.files.update_one({'_id': ObjectId(fileId)}, {'$set': {'metadata.source_processed': 0}})
 		p = Process(None, target=SourceProcessingProcess, args = ([fileId]))
