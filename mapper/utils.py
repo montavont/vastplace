@@ -1,5 +1,8 @@
+from BeautifulSoup import BeautifulSoup
 import math
-
+import pycurl
+from StringIO import StringIO
+from centraldb.decorators import cached_call
 
 CIRC_EARTH = 40075000
 RADIUS_EARTH = 6367000
@@ -7,11 +10,11 @@ RADIUS_EARTH = 6367000
 def meterDist( u, v):
 	lat1, lon1, lat2, lon2 = map(math.radians, [u[0], u[1], v[0], v[1]])
 
-	dlon = lon2 - lon1 
-	dlat = lat2 - lat1 
+	dlon = lon2 - lon1
+	dlat = lat2 - lat1
 
 	a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-	dist = RADIUS_EARTH * 2 * math.asin(math.sqrt(a)) 
+	dist = RADIUS_EARTH * 2 * math.asin(math.sqrt(a))
 
 	return dist
 
@@ -36,23 +39,31 @@ def osm_tile_number_to_latlon(xtile, ytile, zoom):
 
 
 
+def osm_get_raw_data_by_bounding_box(lat_min, lon_min, lat_max, lon_max):
+    return osm_query('http://api.openstreetmap.org/api/0.6/map?bbox=%f,%f,%f,%f' % (lon_min,lat_min,lon_max,lat_max))
 
-def osm_get_raw_data(lat_min, lon_min, lat_max, lon_max):
-    import pycurl
-    from StringIO import StringIO
+def osm_get_raw_data_by_tile_numbers(zoom, x, y):
+    NW_corner = osm_tile_number_to_latlon(x, y, zoom)
+    lat_max, lon_min = NW_corner
+    SE_corner = osm_tile_number_to_latlon(x + 1, y + 1, zoom)
+    lat_min, lon_max = SE_corner
+    return osm_get_raw_data_by_bounding_box(lat_min, lon_min, lat_max, lon_max)
 
+#TODO Implement caching with max age...
+@cached_call
+def osm_query(url):
     buffer = StringIO()
     c = pycurl.Curl()
-    c.setopt(c.URL, 'http://api.openstreetmap.org/api/0.6/map?bbox=%f,%f,%f,%f' % (lon_min,lat_min,lon_max,lat_max))
+    c.setopt(c.URL, url)
     c.setopt(c.WRITEDATA, buffer)
     c.perform()
     c.close()
 
     body = buffer.getvalue()
+
     return body
 
 
-from BeautifulSoup import BeautifulSoup
 
 # Extract the GPS coordinates of the roads
 # roadSel parameter to pass a list of target road names
@@ -83,8 +94,17 @@ def extract_roads_from_osm_xml(xml):
 	return Roads
 
 
+def osm_get_streets_from_tiles(target_tiles, osm_zoom):
+    retval = []
+
+    for x, y in target_tiles:
+        osm_xml = osm_get_raw_data_by_tile_numbers(osm_zoom, x, y)
+        for street in extract_roads_from_osm_xml(osm_xml):
+            if street not in retval:
+                retval.append(street)
+
+    return retval
+
 def osm_get_streets(lat_min, lon_min, lat_max, lon_max):
-    osm_xml = osm_get_raw_data(lat_min, lon_min, lat_max, lon_max)
+    osm_xml = osm_get_raw_data_by_bounding_box(lat_min, lon_min, lat_max, lon_max)
     return extract_roads_from_osm_xml(osm_xml)
-
-
