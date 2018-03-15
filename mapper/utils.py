@@ -108,3 +108,17 @@ def osm_get_streets_from_tiles(target_tiles, osm_zoom):
 def osm_get_streets(lat_min, lon_min, lat_max, lon_max):
     osm_xml = osm_get_raw_data_by_bounding_box(lat_min, lon_min, lat_max, lon_max)
     return extract_roads_from_osm_xml(osm_xml)
+
+def pointStyle(name, color, size, stroke_color = '#00000000', stroke_size = 0):
+    retval = "'%s': new ol.style.Style({\n\
+          image: new ol.style.Circle({\n\
+            radius: %d,\n\
+            fill: new ol.style.Fill({color: '%s'}),\n\
+            stroke: new ol.style.Stroke({ \n\
+	            color: '%s', \n\
+        	    width: %d \n\
+          	}) \n\
+          })\n\
+        })" % (name, size, color, stroke_color, stroke_size)
+
+    return retval

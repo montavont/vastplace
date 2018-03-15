@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Trace File Map display</title>   
+        <title>Trace File Map display</title>
         <meta http-equiv="{{ reload_action }}" content="{{ reload_content }}" />
     	<link rel="stylesheet" href="https://openlayers.org/en/v4.1.1/css/ol.css" type="text/css">
 	    <style>
@@ -29,7 +29,7 @@
 	        ])),
         {% endfor %}
 	];
-		
+
 
 	var pointFeatures = [
 	{% for p in points %}
@@ -42,29 +42,13 @@
 
 
   var pointStyles = {
-        'red': new ol.style.Style({
-          image: new ol.style.Circle({
-            radius: 5,
-            fill: new ol.style.Fill({color: 'red'}),
-          })
-        }),
-        'green': new ol.style.Style({
-          image: new ol.style.Circle({
-            radius: 10,
-            fill: new ol.style.Fill({color: 'green'}),
-          })
-        }),
-        'empty_blue': new ol.style.Style({
-          image: new ol.style.Circle({
-            radius: 10,
-            fill: new ol.style.Fill({color: '#00000000'}),
-            stroke: new ol.style.Stroke({
-	            color: 'blue',
-        	    width: 3
-          	})
-          })
-        })
-      };
+    {% for style in point_styles %}
+    {% autoescape off %}
+  		{{style}},
+	{% endautoescape %}
+    {% endfor %}
+  };
+
 
       var vectorSource = new ol.source.Vector({
         features: pointFeatures,
