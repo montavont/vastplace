@@ -1,9 +1,12 @@
 from pyspark.sql import SparkSession
 from gridfs import GridFS
 from bson.objectid import ObjectId
+import numpy as np
 
 from storage import database
 from mapper.utils import meterDist, osm_latlon_to_tile_number, osm_get_streets_from_tiles
+from centraldb.decorators import cached_call
+
 
 #given a list of points (a, b, c), returns [(a, b), (b, c)]
 def pointsToSegList(pts):
@@ -170,29 +173,26 @@ def generateInterpolatedCells(cell_couple):
     return actual_retval
 
 
-def getMergedCells(traceType, sensorType, osm_zoom):
+@cached_call
+def get_cells_for_source(src_id, sensorType, osm_zoom):
     client = database.getClient()
     db = client.trace_database
     fs = GridFS(db)
 
-    all_air_points = []
     gps_points = []
 
     # Iterate source events and group GPS and sensor information
-    for traceFile in fs.find():
-	if 'sourceTypes' in traceFile.metadata and traceType in traceFile.metadata['sourceTypes']:
-            point_collection = client.point_database.sensors.find({'sourceId':ObjectId(traceFile._id)})
+    point_collection = client.point_database.sensors.find({'sourceId':ObjectId(src_id)})
 
-            GPS = (-1,-1)
-            air_points = []
-            for point in point_collection:
-    	        if point['sensorType'] == 'GPS':
-                    GPS = point['sensorValue']
-                    gps_points.append(GPS)
-        	elif point['sensorType'] == sensorType:
-	            if GPS != (-1, -1):
-	                air_points.append([GPS, point['sensorValue'], point['vTimestamp']])
-            all_air_points += air_points
+    GPS = (-1,-1)
+    air_points = []
+    for point in point_collection:
+    	if point['sensorType'] == 'GPS':
+            GPS = point['sensorValue']
+            gps_points.append(GPS)
+	elif point['sensorType'] == sensorType:
+	    if GPS != (-1, -1):
+	        air_points.append([GPS, point['sensorValue'], point['vTimestamp']])
 
     target_tiles = set([osm_latlon_to_tile_number(lat, lon, osm_zoom) for lat, lon in gps_points])
     streets = osm_get_streets_from_tiles(target_tiles, osm_zoom)
@@ -208,7 +208,7 @@ def getMergedCells(traceType, sensorType, osm_zoom):
     segments = street_rdd.flatMap(pointsToSegList)
     cells = segments.flatMap(lambda x : generateCells(x, osm_zoom))
 
-    air_points_rdd = spark.sparkContext.parallelize(all_air_points)
+    air_points_rdd = spark.sparkContext.parallelize(air_points)
     tiled_air_point_rdd = air_points_rdd.flatMap(lambda x : sensorValueToTile(x, osm_zoom))
 
     # Build list of cells grouped by Osm Tile coordinates, these lists contain cells from the indicated tile, or a neighbouring one.
@@ -228,9 +228,35 @@ def getMergedCells(traceType, sensorType, osm_zoom):
     # Actually create interpolated measurement cells.
     interpolated_points = spark.sparkContext.parallelize(sensor_point_couples).flatMap(generateInterpolatedCells).groupByKey()
 
-    averaged_points = interpolated_points.map(averageCell)
+    #averaged_points = interpolated_points.map(averageCell)
 
     client.close()
 
-    return averaged_points.toLocalIterator()
+    # This changes the returned value to a regular list, making is saveable in database for caching
+    # return [cell for  cell  in averaged_points.toLocalIterator()]
+    return [(cell, [value for value in vIterator]) for  cell, vIterator  in interpolated_points.toLocalIterator()]
 
+def getMergedCells(traceType, sensorType, osm_zoom):
+    retval = []
+    cell_values = {}
+    client = database.getClient()
+    db = client.trace_database
+    fs = GridFS(db)
+
+
+    for traceFile in fs.find():
+	if 'sourceTypes' in traceFile.metadata and traceType in traceFile.metadata['sourceTypes']:
+            src_cells = get_cells_for_source(traceFile._id, sensorType, osm_zoom)
+            for gps, values in src_cells:
+                if tuple(gps) not in cell_values:
+                    cell_values[tuple(gps)] = []
+                cell_values[tuple(gps)] += [value for ts, value in values]
+
+    #TODO : averaging and groupByKey done by spark...
+    for gps in cell_values:
+        retval.append((gps, np.mean(cell_values[gps])))
+
+    client.close()
+
+
+    return retval
