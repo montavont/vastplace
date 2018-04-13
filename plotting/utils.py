@@ -40,13 +40,17 @@ def plotBarGraph(bars, xlabel = "", ylabel = '', legend = False):
 
 
 
-def plotCDF_impl(return_dict, data, xlabel, ylabel, legend):
+def plotCDF_impl(return_dict, data, xlabel, ylabel, legend, log_x):
 	#plot the image and send it in the response
 	plt.figure()
 
 	for d in data:
   		cdf = ECDF(d['data'])
                 plt.step(cdf.x, cdf.y, color=d['color'], label = d['label'])
+
+
+        if log_x:
+            plt.xscale("log", nonposx='clip')
 	plt.xlabel(xlabel)
 	plt.ylabel(ylabel)
 	if legend:
@@ -61,11 +65,41 @@ def plotCDF_impl(return_dict, data, xlabel, ylabel, legend):
 	return_dict['graph'] = buf
 
 
-def plotCDF(data, xlabel = "", ylabel = '', legend = False):
+def plotCDF(data, xlabel = "", ylabel = '', legend = False, log_x = False):
 	manager = multiprocessing.Manager()
 	return_dict = manager.dict()
 	jobs = []
-        p = multiprocessing.Process(target=plotCDF_impl, args=(return_dict, data, xlabel, ylabel, legend))
+        p = multiprocessing.Process(target=plotCDF_impl, args=(return_dict, data, xlabel, ylabel, legend, log_x))
+        p.start()
+       	p.join()
+
+	return return_dict['graph']
+
+def plotStep_impl(return_dict, data, xlabel, ylabel, legend):
+	#plot the image and send it in the response
+	plt.figure()
+
+	for d in data:
+                plt.step(d['x'], d['y'], color=d['color'], label = d['label'])
+	plt.xlabel(xlabel)
+	plt.ylabel(ylabel)
+	if legend:
+		plt.legend()
+
+	buf = io.BytesIO()
+	plt.savefig(buf, format='svg')
+
+	plt.close()
+	buf.seek(0)
+
+	return_dict['graph'] = buf
+
+
+def plotStep(data, xlabel = "", ylabel = '', legend = False):
+	manager = multiprocessing.Manager()
+	return_dict = manager.dict()
+	jobs = []
+        p = multiprocessing.Process(target=plotStep_impl, args=(return_dict, data, xlabel, ylabel, legend))
         p.start()
        	p.join()
 
