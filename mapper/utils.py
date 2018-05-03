@@ -7,13 +7,52 @@ RADIUS_EARTH = 6367000
 def meterDist( u, v):
 	lat1, lon1, lat2, lon2 = map(math.radians, [u[0], u[1], v[0], v[1]])
 
-	dlon = lon2 - lon1 
-	dlat = lat2 - lat1 
+	dlon = lon2 - lon1
+	dlat = lat2 - lat1
 
 	a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-	dist = RADIUS_EARTH * 2 * math.asin(math.sqrt(a)) 
+	dist = RADIUS_EARTH * 2 * math.asin(math.sqrt(a))
 
 	return dist
+
+def point_projection_on_line(p, seg, testSegmentEnds=False):
+	"""
+	Planar Projection of a point on a line
+        testSegmentEnds limits the projection to the segment, if False, the whole line is used
+	"""
+
+	x3,y3 = p
+	(x1,y1),(x2,y2) = seg
+
+	dx21 = (x2-x1)
+	dy21 = (y2-y1)
+
+	lensq21 = dx21*dx21 + dy21*dy21
+        #Check for degenerate segment
+	if lensq21 == 0:
+	    return (x1, y1)
+
+	u = (x3-x1)*dx21 + (y3-y1)*dy21
+	u = u / float(lensq21)
+
+	x = x1+ u * dx21
+	y = y1+ u * dy21
+
+	if testSegmentEnds:
+	    if u < 0:
+	        x,y = x1,y1
+	    elif u >1:
+	        x,y = x2,y2
+
+	return (x,y)
+
+def point_distance_to_line(p, seg, testSegmentEnds=False):
+	"""
+	Distance in meters of a point to a line
+        testSegmentEnds limits the projection to the segment, if False, the whole line is used
+	"""
+        projection = point_projection_on_line(p, seg, testSegmentEnds)
+        return meterDist(p, projection)
 
 
 
@@ -34,8 +73,11 @@ def osm_tile_number_to_latlon(xtile, ytile, zoom):
 	lat_deg = math.degrees(lat_rad)
 	return (lat_deg, lon_deg)
 
-
-
+def osm_tile_number_to_center_latlon(xtile, ytile, zoom):
+	""" Returns the latitude and longitude of the center of a tile, based on the tile numbers and the zoom level"""
+	lat1, lon1 = osm_tile_number_to_latlon(xtile, ytile, zoom)
+	lat2, lon2 = osm_tile_number_to_latlon(xtile +1 , ytile + 1, zoom)
+	return ((lat1 + lat2)/2.0, (lon1 +lon2) / 2.0)
 
 def osm_get_raw_data(lat_min, lon_min, lat_max, lon_max):
     import pycurl
