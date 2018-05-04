@@ -20,9 +20,4 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^campaignfiles/', include('campaignfiles.urls')),
     url(r'^mapper/', include('mapper.urls')),
-    url(r'^wi2metools/', include('wi2metools.urls')),
-    url(r'^mobilelora/', include('mobilelora.urls')),
-    url(r'^staticlora/', include('staticlora.urls')),
-    url(r'^mobrel/', include('mobrel.urls')),
-    url(r'^ambassadair/', include('ambassadair.urls')),
 ]
