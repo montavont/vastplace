@@ -10,13 +10,17 @@ from statsmodels.distributions.empirical_distribution import ECDF
 
 #This is mainly a wrapper around matplotlib functions, in order to spawn them into processes and avoid multithreading conflicts when plotting on the fly
 
-def plotBarGraph_impl(return_dict, bars, xlabel, ylabel, legend):
+def plotBarGraph_impl(return_dict, bars, xlabel, ylabel, x_ticks, y_ticks, x_tick_labels, y_tick_labels, legend):
 	#plot the image and send it in the response
 	plt.figure()
 	for bar in bars:
 		plt.bar(bar['X'], bar['Y'], label = bar['label'], width = bar['width'], color = bar['color'])
 	plt.xlabel(xlabel)
 	plt.ylabel(ylabel)
+
+        if x_ticks is not None and x_tick_labels is not None:
+            plt.xticks(x_ticks, x_tick_labels, rotation = 45)
+
 	if legend:
 		plt.legend()
 
@@ -28,11 +32,11 @@ def plotBarGraph_impl(return_dict, bars, xlabel, ylabel, legend):
 
 	return_dict['graph'] = buf
 
-def plotBarGraph(bars, xlabel = "", ylabel = '', legend = False):
+def plotBarGraph(bars, xlabel = "", ylabel = '', x_ticks = None, y_ticks = None, x_tick_labels=None, y_tick_labels=None, legend = False):
 	manager = multiprocessing.Manager()
 	return_dict = manager.dict()
 	jobs = []
-        p = multiprocessing.Process(target=plotBarGraph_impl, args=(return_dict, bars, xlabel, ylabel, legend))
+        p = multiprocessing.Process(target=plotBarGraph_impl, args=(return_dict, bars, xlabel, ylabel, x_ticks, y_ticks, x_tick_labels, y_tick_labels, legend))
         p.start()
        	p.join()
 

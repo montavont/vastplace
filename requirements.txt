@@ -12,3 +12,4 @@ matplotlib
 statsmodels
 Pillow
 pycurl
+pyspark
