@@ -10,27 +10,27 @@ box = None
 
 
 def getClient():
-	global box
-	if settings.TESTING:
-		if box is None:
-			box = MongoBox()
-			box.start()
+        global box
+        if settings.TESTING:
+                if box is None:
+                        box = MongoBox()
+                        box.start()
 
-		retval = box.client()
-	else:
-		retval = MongoClient()
+                retval = box.client()
+        else:
+                retval = MongoClient()
 
-	return retval
+        return retval
 
 import json
 
 def purge_database():
-	global box
-	if settings.TESTING and box is not None:
-		client = box.client()
-	        for db in client.database_names():
-			if db in ['admin', 'startup_log']:
-				continue
-			else:
-				for collection in client[db].collection_names():
-					client[db].drop_collection(collection)
+        global box
+        if settings.TESTING and box is not None:
+                client = box.client()
+                for db in client.database_names():
+                        if db in ['admin', 'startup_log']:
+                                continue
+                        else:
+                                for collection in client[db].collection_names():
+                                        client[db].drop_collection(collection)
