@@ -8,7 +8,7 @@ from django.http import HttpResponseNotFound
 from bson.objectid import ObjectId
 from gridfs import GridFS, GridFSBucket
 
-from forms import UploadFileForm
+from campaignfiles.forms import UploadFileForm
 from models import SourceType
 from multiprocessing import Process
 import importlib
