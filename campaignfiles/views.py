@@ -27,7 +27,7 @@ def upload_file(request):
                 for upFile in request.FILES.getlist('file'):
                         fileId = handle_uploaded_file(upFile)
                         fileIds.append(fileId)
-                    response = HttpResponseRedirect('/campaignfiles/details/' + '-'.join(str(fId) for fId in fileIds))
+                response = HttpResponseRedirect('/campaignfiles/details/' + '-'.join(str(fId) for fId in fileIds))
     else:
             response = HttpResponseRedirect('/campaignfiles/content')
 
