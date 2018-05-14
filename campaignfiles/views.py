@@ -9,7 +9,7 @@ from bson.objectid import ObjectId
 from gridfs import GridFS, GridFSBucket
 
 from campaignfiles.forms import UploadFileForm
-from models import SourceType
+from campaignfiles.models import SourceType
 from multiprocessing import Process
 import importlib
 
