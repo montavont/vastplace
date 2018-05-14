@@ -1,3 +1,4 @@
 *pyc
 celerybeat-schedule
 wi2meCentral_db_database.sqlite
+.coverage

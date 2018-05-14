@@ -6,7 +6,7 @@ pymongo
 mongobox
 numpy
 cairocffi
-beautifulsoup
+bs4
 svgwrite
 matplotlib
 statsmodels
