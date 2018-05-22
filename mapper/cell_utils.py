@@ -95,7 +95,6 @@ def segment_equality(seg1, seg2):
 
     return retval
 
-
 def averageCell(cell):
     average = 0
     gps, data = cell
@@ -106,8 +105,6 @@ def averageCell(cell):
     average /= float(len(data))
 
     return (gps, average)
-
-
 
 def generateInterpolatedCells(cell_couple):
     retval = []
@@ -173,8 +170,8 @@ def generateInterpolatedCells(cell_couple):
     return actual_retval
 
 
-@cached_call
-def get_cells_for_source(src_id, sensorType, osm_zoom):
+#@cached_call
+def get_cells_for_source(src_id, sensorType, osm_zoom, cell_interpolation_function):
     client = database.getClient()
     db = client.trace_database
     fs = GridFS(db)
@@ -226,9 +223,7 @@ def get_cells_for_source(src_id, sensorType, osm_zoom):
         last_sensor = sensor
 
     # Actually create interpolated measurement cells.
-    interpolated_points = spark.sparkContext.parallelize(sensor_point_couples).flatMap(generateInterpolatedCells).groupByKey()
-
-    #averaged_points = interpolated_points.map(averageCell)
+    interpolated_points = spark.sparkContext.parallelize(sensor_point_couples).flatMap(cell_interpolation_function).groupByKey()
 
     client.close()
 
@@ -236,7 +231,7 @@ def get_cells_for_source(src_id, sensorType, osm_zoom):
     # return [cell for  cell  in averaged_points.toLocalIterator()]
     return [(cell, [value for value in vIterator]) for  cell, vIterator  in interpolated_points.toLocalIterator()]
 
-def getMergedCells(traceType, sensorType, osm_zoom):
+def getMergedCells(traceType, sensorType, osm_zoom, average_cell_values = True, cell_interpolation_function=generateInterpolatedCells):
     retval = []
     cell_values = {}
     client = database.getClient()
@@ -246,7 +241,7 @@ def getMergedCells(traceType, sensorType, osm_zoom):
 
     for traceFile in fs.find():
 	if 'sourceTypes' in traceFile.metadata and traceType in traceFile.metadata['sourceTypes']:
-            src_cells = get_cells_for_source(traceFile._id, sensorType, osm_zoom)
+            src_cells = get_cells_for_source(traceFile._id, sensorType, osm_zoom, cell_interpolation_function)
             for gps, values in src_cells:
                 if tuple(gps) not in cell_values:
                     cell_values[tuple(gps)] = []
@@ -254,7 +249,10 @@ def getMergedCells(traceType, sensorType, osm_zoom):
 
     #TODO : averaging and groupByKey done by spark...
     for gps in cell_values:
-        retval.append((gps, np.mean(cell_values[gps])))
+        if average_cell_values:
+            retval.append((gps, np.mean(cell_values[gps])))
+        else:
+            retval.append((gps, cell_values[gps]))
 
     client.close()
 
