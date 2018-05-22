@@ -83,7 +83,7 @@ def osm_tile_number_to_center_latlon(xtile, ytile, zoom):
   return ((lat1 + lat2)/2.0, (lon1 +lon2) / 2.0)
 
 def osm_get_raw_data_by_bounding_box(lat_min, lon_min, lat_max, lon_max):
-    return osm_query('http://api.openstreetmap.org/api/0.6/map?bbox=%f,%f,%f,%f' % (lon_min,lat_min,lon_max,lat_max))
+    return osm_query('https://www.openstreetmap.org/api/0.6/map?bbox=%f,%f,%f,%f' % (lon_min,lat_min,lon_max,lat_max))
 
 
 def osm_get_raw_data_by_tile_numbers(zoom, x, y):
