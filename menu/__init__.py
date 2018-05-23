@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 """
 BSD 3-Clause License
 

@@ -50,6 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 			<div class="table-responsive">
 				<table id="mytable" class="table table-bordred table-striped">
 					<thead>
+						<th>File type</th>
 						<th>File name</th>
 						<th>Delete</th>
 						<th>Download</th>
@@ -59,6 +60,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 					{% for f in fileList %}
 					<tbody>
 						<tr>
+							<td>{{ f.types }}	-	{{ f.length }}</td> 
 							<td>{{ f.filename }}	-	{{ f.length }}</td> 
 							<td><p data-placement="top" data-toggle="tooltip" title="Delete"><a href="/campaignfiles/delete/{{f.id}}"><img src="{% static 'icones/delete.png' %}" class="icons" alt="delete"/></a></p></td>	
 							<td><p data-placement="top" data-toggle="tooltip" title="Download"><a href="/campaignfiles/download/{{f.id}}"><img src="{% static 'icones/download.png' %}" class="icons" alt="download"/></a></td> 
