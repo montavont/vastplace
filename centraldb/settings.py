@@ -33,9 +33,7 @@ SECRET_KEY = 'a_e8y$8ph97o99*8$&pd3zb@aij&2#wukul$w_i_)1&#tdqgyd'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = [
-        "127.0.0.1"
 ]
 
 
@@ -50,7 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'campaignfiles',
-    'mapper',
+    'index',
 ]
 
 MIDDLEWARE = [
@@ -68,7 +66,9 @@ ROOT_URLCONF = 'centraldb.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+        	'templates/'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -133,3 +133,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = ''
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+    '/var/www/static/'
+]

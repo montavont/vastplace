@@ -1,0 +1,80 @@
+<!--
+BSD 3-Clause License
+
+Copyright (c) 2018, IMT Atlantique
+All rights reserved.
+
+This file is part of vastplace
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of the copyright holder nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+@author Tanguy Kerdoncuff
+@author Guillaume de Pluvié
+@author Nicolhas Delvoye
+@author Tristan Rieu
+@author Téva Vanouche
+--!>
+
+
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Available files{% endblock %}
+{% block content %}
+<div id="content-container" class="container p-none">
+	<div class="row">
+		<div class="col-sm-1"></div>
+		<div class="col-sm-10">
+			<div class="table-responsive">
+				<table id="mytable" class="table table-bordred table-striped">
+					<thead>
+						<th>File name</th>
+						<th>Delete</th>
+						<th>Download</th>
+						<th>Detail</th>
+						<th>Plot</th>
+					</thead>
+					{% for f in fileList %}
+					<tbody>
+						<tr>
+							<td>{{ f.filename }}	-	{{ f.length }}</td> 
+							<td><p data-placement="top" data-toggle="tooltip" title="Delete"><a href="/campaignfiles/delete/{{f.id}}"><img src="{% static 'icones/delete.png' %}" class="icons" alt="delete"/></a></p></td>	
+							<td><p data-placement="top" data-toggle="tooltip" title="Download"><a href="/campaignfiles/download/{{f.id}}"><img src="{% static 'icones/download.png' %}" class="icons" alt="download"/></a></td> 
+							<td><p data-placement="top" data-toggle="tooltip" title="Detail"><a href="/campaignfiles/details/{{f.id}}"><img src="{% static 'icones/detail.png' %}" class="icons" alt="detail"/></a></td>  
+							<td><p data-placement="top" data-toggle="tooltip" title="Plot"><a href="/wi2metools/metricSelection/{{f.id}}"><img src="{% static 'icones/plot.png' %}" class="icons" alt="plot"/></a></td> 
+						</tr>
+					</tbody>
+					{% endfor %}
+			</table>
+		</div>
+		{% csrf_token %}
+		<form action="upload" method="post" enctype="multipart/form-data">
+			<p><input type="file" name="file" /></p><p><input type="submit" value="Upload" /></p>
+		</form>
+	</div>
+</div>
+</div>
+</div>
+{% endblock %}

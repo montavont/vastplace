@@ -1,0 +1,231 @@
+/*
+BSD 3-Clause License
+
+Copyright (c) 2018, IMT Atlantique
+All rights reserved.
+
+This file is part of vastplace
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of the copyright holder nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+@author Guillaume de Pluvié
+@author Nicolhas Delvoye
+@author Tristan Rieu
+@author Téva Vanouche
+ */
+
+@font-face {
+  font-family: 'Open Sans Condensed';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Open Sans Condensed Light'), local('OpenSansCondensed-Light'),
+       url('open-sans-condensed-v12-latin-300.woff2') format('woff2'),
+       url('open-sans-condensed-v12-latin-300.woff') format('woff');
+}
+
+body { 
+  font-family: Open Sans Condensed;
+  margin:0;
+  padding:0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+/* Navbar - Menu */
+#navbar-inverse{
+  background-color:#333;
+  border: none;
+  border-radius: none;
+}
+
+#menu2:hover {
+  background-color: #5AB1FD;
+}
+
+#boutonnav:hover {
+  background-color: #5AB1FD;
+}
+
+.menu:hover {
+    background-color: #5AB1FD;
+    display: block;
+}
+
+/* Footer */
+#monFooter{
+  background: #333;
+  text-align:center; 
+  font-size:1em; 
+  font-family: Open Sans Condensed;
+  color: white;
+  padding-top: 1%;
+  padding-bottom: 1%;
+}
+
+/* Chargement */
+.loading {
+  background: transparent url('http://thinkfuture.com/wp-content/uploads/2013/10/loading_spinner.gif') center no-repeat;
+}
+
+/* N'affiche pas la page au début*/
+.content {
+  display:none;
+  margin-bottom: 2%;
+}
+
+/* Affiche un chargement */
+.preload {
+  padding:0;
+  margin:0;
+  position: absolute;
+  top:50%;
+  left:50%;
+  margin-right: -50%;
+  transform:translate(-50%, -50%);
+  text-align: center;
+}
+
+/* CampaignFiles */
+form, input{
+    margin-left : 5px;
+}
+#btn-campaign{
+  margin-left : 5px;
+}
+
+.icons{
+  width: 25px;
+  height: 25px;
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+  -o-transition: all 0.3s ease-in-out;
+  -ms-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+.icons:hover{
+  -webkit-transform: scale(1.2);
+  -moz-transform: scale(1.2);
+  -o-transform: scale(1.2);
+  transform: scale(1.2);
+}
+
+li {
+  list-style-type: none;
+}
+
+/* Login */
+#btn-login:hover{
+  background-color: #5AB1FD;
+  color:white;
+}
+
+/* Index */
+.slide {
+  position: relative;
+  padding: 25vh 10%;
+  min-height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  box-shadow: 0 -1px 10px rgba(0, 0, 0, .7);
+  transform-style: inherit;
+}
+
+.slide:before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+.title {
+	width: 50%;
+	padding: 5%;
+	color:#5AB1FD;
+}
+#title h1 {
+  font-family: Open Sans Condensed;
+  color:#5AB1FD; 
+}
+.title2{
+  background-color:rgba(90,177,253,0.8) ;
+  text-align:center;
+  float:right;
+  color:white;
+  border-radius:100%;
+  padding:7%;
+  font-size:0.8em;
+  font-family: Open Sans Condensed;
+}
+
+.title3{
+  background-color:rgba(90,177,253,0.8) ;
+  text-align:center;
+  float:left;
+  color:white;
+  border-radius:100%;
+  padding:7%;
+  font-family: Open Sans Condensed;
+  
+}
+.slide:nth-child(2n) .title {
+	margin-left: 0;
+	margin-right: auto;
+}
+
+.slide:nth-child(2n+1) .title {
+	margin-left: auto;
+	margin-right: 0;
+}
+
+.slide, .slide:before {
+	background: 50% 50% / cover;  
+}
+
+.header {
+	text-align: center;
+	font-size: 175%;
+	color: #fff;
+  margin-bottom : 5%;
+}
+
+#title {  
+  z-index:3;
+  padding-top: 50px;
+  font-family: Open Sans Condensed;
+}
+#slide1{
+}
+#slide1:before {
+  z-index:-1;
+}
+
+#slide2 {
+  background-attachment: fixed;
+  z-index: -1;
+}
