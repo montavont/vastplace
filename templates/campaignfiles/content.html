@@ -73,9 +73,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 					{% endfor %}
 			</table>
 		</div>
-		{% csrf_token %}
 		<form action="upload" method="post" enctype="multipart/form-data">
-			<p><input type="file" name="file" /></p><p><input type="submit" value="Upload" /></p>
+			{% csrf_token %}
+            <p><input type="submit" value="Upload" /> <input type="file" name="file" multiple="true"/></p>
 		</form>
 	</div>
 </div>
