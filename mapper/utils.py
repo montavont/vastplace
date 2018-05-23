@@ -2,7 +2,11 @@ from bs4 import BeautifulSoup
 import math
 import pycurl
 from StringIO import StringIO
+from gridfs import GridFS
+from bson.objectid import ObjectId
+
 from centraldb.decorators import cached_call
+from storage import database
 
 CIRC_EARTH = 40075000
 RADIUS_EARTH = 6367000
@@ -138,7 +142,7 @@ def extract_roads_from_osm_xml(xml):
 	return Roads
 
 
-def osm_get_streets_from_tiles(target_tiles, osm_zoom):
+def osm_get_streets_for_tiles(target_tiles, osm_zoom):
     retval = []
 
     for x, y in target_tiles:
@@ -153,6 +157,107 @@ def osm_get_streets(lat_min, lon_min, lat_max, lon_max):
     osm_xml = osm_get_raw_data_by_bounding_box(lat_min, lon_min, lat_max, lon_max)
     return extract_roads_from_osm_xml(osm_xml)
 
+def osm_get_streets_for_source(src_id, osm_zoom):
+    client = database.getClient()
+    db = client.trace_database
+    fs = GridFS(db)
+
+    gps_points = []
+
+    # Iterate source events and group GPS and sensor information
+    point_collection = client.point_database.sensors.find({'sourceId':ObjectId(src_id)})
+
+    for point in point_collection:
+    	if point['sensorType'] == 'GPS':
+            GPS = point['sensorValue']
+            gps_points.append(GPS)
+
+    tiles = set([osm_latlon_to_tile_number(lat, lon, osm_zoom) for lat, lon in gps_points])
+
+    streets = osm_get_streets_for_tiles(tiles, osm_zoom)
+    return streets
+
+
+
+def extract_intersections_from_osm_xml(osm_xml):
+    """
+        Extract the GPS coordinates of the roads intersections
+	Return a list of gps tuples
+    """
+
+    soup = BeautifulSoup(osm_xml)
+
+    retval = []
+    segments_by_extremities = {}
+    Roads = []
+    RoadRefs = []
+    Coordinates = {}
+
+    for point in soup.osm.findAll('node'):
+        Coordinates[point['id']] = (float(point['lat']), float(point['lon']))
+
+    for way in soup.osm.findAll(lambda node : node.name=="way" and node.findAll(k='highway')):
+        name = ""
+        roadPoints = []
+
+        nodes = way.findAll('nd')
+        for node in nodes:
+            roadPoints.append(node['ref'])
+
+        RoadRefs.append(roadPoints)
+
+    # iterate over the list of street and over each segment of a street.
+    # for each segment extremity, build a list of segment leading to it
+    for roadIdx, roadRef in enumerate(RoadRefs):
+        for segIdx, seg in enumerate(roadRef):
+            coords = Coordinates[seg]
+            if coords not in segments_by_extremities:
+                segments_by_extremities[coords] = []
+
+            segments_by_extremities[coords].append([roadIdx, segIdx])
+
+    # Iterate over the extremity lists, only keep the ones with at least three segments leading to them
+    # Otherwise, they are not an intersection, just a turn in a road
+    for k in segments_by_extremities.keys():
+        if len(segments_by_extremities[k]) <2:
+            del(segments_by_extremities[k])
+
+    #finally return just the keys
+    return segments_by_extremities.keys()
+
+
+def osm_get_intersections_for_tiles(target_tiles, osm_zoom):
+    retval = []
+
+    for x, y in target_tiles:
+        osm_xml = osm_get_raw_data_by_tile_numbers(osm_zoom, x, y)
+        for street in extract_intersections_from_osm_xml(osm_xml):
+            if street not in retval:
+                retval.append(street)
+
+    return retval
+
+def osm_get_intersections_for_source(src_id, osm_zoom):
+    client = database.getClient()
+    db = client.trace_database
+    fs = GridFS(db)
+
+    gps_points = []
+
+    # Iterate source events and group GPS and sensor information
+    point_collection = client.point_database.sensors.find({'sourceId':ObjectId(src_id)})
+
+    for point in point_collection:
+    	if point['sensorType'] == 'GPS':
+            GPS = point['sensorValue']
+            gps_points.append(GPS)
+
+    tiles = set([osm_latlon_to_tile_number(lat, lon, osm_zoom) for lat, lon in gps_points])
+
+    intersections = osm_get_intersections_for_tiles(tiles, osm_zoom)
+    return intersections
+
+
 def pointStyle(name, color, size, stroke_color = '#00000000', stroke_size = 0):
     retval = "'%s': new ol.style.Style({\n\
           image: new ol.style.Circle({\n\
@@ -166,3 +271,4 @@ def pointStyle(name, color, size, stroke_color = '#00000000', stroke_size = 0):
         })" % (name, size, color, stroke_color, stroke_size)
 
     return retval
+

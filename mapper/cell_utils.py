@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 import numpy as np
 
 from storage import database
-from mapper.utils import meterDist, osm_latlon_to_tile_number, osm_get_streets_from_tiles
+from mapper.utils import meterDist, osm_latlon_to_tile_number, osm_get_streets_for_tiles
 from centraldb.decorators import cached_call
 
 
@@ -15,7 +15,7 @@ def pointsToSegList(pts):
 	if len(pts) > 0:
 		l = pts[0]
 		for p in pts[1:]:
-			retval.append([l, p])
+			retval.append((l, p))
 			l = p
 
 	return retval
@@ -182,17 +182,17 @@ def get_cells_for_source(src_id, sensorType, osm_zoom, cell_interpolation_functi
     point_collection = client.point_database.sensors.find({'sourceId':ObjectId(src_id)})
 
     GPS = (-1,-1)
-    air_points = []
+    sensor_points = []
     for point in point_collection:
     	if point['sensorType'] == 'GPS':
             GPS = point['sensorValue']
             gps_points.append(GPS)
 	elif point['sensorType'] == sensorType:
 	    if GPS != (-1, -1):
-	        air_points.append([GPS, point['sensorValue'], point['vTimestamp']])
+	        sensor_points.append([GPS, point['sensorValue'], point['vTimestamp']])
 
     target_tiles = set([osm_latlon_to_tile_number(lat, lon, osm_zoom) for lat, lon in gps_points])
-    streets = osm_get_streets_from_tiles(target_tiles, osm_zoom)
+    streets = osm_get_streets_for_tiles(target_tiles, osm_zoom)
 
     spark = SparkSession.builder.appName("cell generator") \
         .config("spark.driver.extraClassPath", "/home/tanguy/src/spark/mongo-spark/target/scala-2.11/mongo-spark-connector_2.11-2.2.0.jar:/usr/share/java/mongodb-driver-core.jar:/usr/share/java/mongodb-driver.jar:/usr/share/java/bson.jar") \
@@ -205,14 +205,14 @@ def get_cells_for_source(src_id, sensorType, osm_zoom, cell_interpolation_functi
     segments = street_rdd.flatMap(pointsToSegList)
     cells = segments.flatMap(lambda x : generateCells(x, osm_zoom))
 
-    air_points_rdd = spark.sparkContext.parallelize(air_points)
-    tiled_air_point_rdd = air_points_rdd.flatMap(lambda x : sensorValueToTile(x, osm_zoom))
+    sensor_points_rdd = spark.sparkContext.parallelize(sensor_points)
+    tiled_sensor_point_rdd = sensor_points_rdd.flatMap(lambda x : sensorValueToTile(x, osm_zoom))
 
     # Build list of cells grouped by Osm Tile coordinates, these lists contain cells from the indicated tile, or a neighbouring one.
     neighbouring_cells = cells.flatMap(shareCellWithNeighbours).groupByKey()
 
     # This grouping now done, we can now compare a sensor mesurement with the cells present in his surroundings (his cell + the neigbouring one) to find the closest one
-    located_data_points = tiled_air_point_rdd.join(neighbouring_cells).flatMap(place_datapoint_on_cell)
+    located_data_points = tiled_sensor_point_rdd.join(neighbouring_cells).flatMap(place_datapoint_on_cell)
 
     # Group the measurement points by two (a point and the next) in order to later parralelize the interpolation
     sensor_point_couples = []
@@ -255,6 +255,5 @@ def getMergedCells(traceType, sensorType, osm_zoom, average_cell_values = True, 
             retval.append((gps, cell_values[gps]))
 
     client.close()
-
 
     return retval
