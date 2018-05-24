@@ -35,8 +35,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @author Tanguy Kerdoncuff
 """
 from django.conf.urls import url
+from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import views
+
+rest_patterns = [
+    url(r'trace_count', views.trace_count, name='trace_count'),
+    url(r'total_size_b', views.total_size, name='total_size_b'),
+    url(r'total_size_kb', views.total_size_kb, name='total_size_kb'),
+    url(r'event_count', views.event_count, name='event_count'),
+]
+
+rest_patterns = format_suffix_patterns(rest_patterns)
+
 
 urlpatterns = [
     url(r'upload', views.upload_file, name='upload_file'),
@@ -46,4 +57,4 @@ urlpatterns = [
     url(r'download/(?P<fileId>\w+)$', views.download, name='download'),
     url(r'details/(?P<fileId>\w+)$', views.viewdetails, name='details'),
     url(r'details/(?P<fileIds>[-\w]+)$', views.viewmultipledetails, name='multipledetails'),
-]
+] + rest_patterns

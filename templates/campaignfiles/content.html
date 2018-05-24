@@ -43,6 +43,65 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 {% load static %}
 {% block title %}Available files{% endblock %}
 {% block content %}
+<script>
+        $(function() {
+		   $.getJSON('/campaignfiles/trace_count', function(data) {
+        		var trace_count = "<tr><td>" + data + "</td></tr>";
+        	   	$(trace_count).appendTo("#tracecount tbody");
+	   	   });
+		});
+        $(function() {
+		   $.getJSON('/campaignfiles/event_count', function(data) {
+        		var event_count = "<tr><td>" + data + "</td></tr>";
+        	   	$(event_count).appendTo("#eventcount tbody");
+	   	   });
+		});
+        $(function() {
+		   $.getJSON('/campaignfiles/total_size_kb', function(data) {
+        		var total_size = "<tr><td>" + data + " kB </td></tr>";
+        	   	$(total_size).appendTo("#totalsize tbody");
+	   	   });
+		});
+</script>
+<div id="info-container" class="container p-none">
+	<div class="row">
+		<div class="col-sm-1"></div>
+		<div class="col-sm-2">
+			<div class="table-responsive">
+				<table id="tracecount" class="table table-bordred table-striped">
+	   				<thead>
+		        		<th>Trace Files</th>
+  					</thead>
+					<tbody>
+			   		</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="col-sm-2">
+			<div class="table-responsive">
+				<table id="eventcount" class="table table-bordred table-striped">
+	   				<thead>
+		        		<th>Datapoint count</th>
+  					</thead>
+					<tbody>
+			   		</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="col-sm-2">
+			<div class="table-responsive">
+				<table id="totalsize" class="table table-bordred table-striped">
+	   				<thead>
+		        		<th>Total Size</th>
+  					</thead>
+					<tbody>
+			   		</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div id="content-container" class="container p-none">
 	<div class="row">
 		<div class="col-sm-1"></div>
