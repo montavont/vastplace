@@ -35,19 +35,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @author Tanguy Kerdoncuff
 """
 from functools import wraps
-from gridfs import GridFS
+from gridfs import GridFS, GridFSBucket
+from bson import ObjectId
+import json
 
 from storage import database
+
+
 
 def cached_call(view_func):
     def _decorator(request, *args, **kwargs):
 	client = database.getClient()
-	cached_func_call =  client.centraldb.cached_results.find_one({'function':view_func.__name__, 'parameters':[request] + list(args), 'kwargs':kwargs})
-	if cached_func_call is not None and 'cached_response' in cached_func_call:
-		response = cached_func_call['cached_response']
+	db = client.centraldb
+        response = None
+
+	cached_func_call =  db.cached_results.find_one({'function':view_func.__name__, 'parameters':[request] + list(args), 'kwargs':kwargs})
+	if cached_func_call is not None and 'grid_id' in cached_func_call:
+                fs = GridFS(db)
+                response = json.loads(fs.get(ObjectId(cached_func_call['grid_id'])).read())
 	else:
+                fs_bucket = GridFSBucket(db)
 	        response = view_func(request, *args, **kwargs)
-		client.centraldb.cached_results.insert_one({'function':view_func.__name__, 'parameters':[request] + list(args), 'cached_response':response, 'kwargs':kwargs})
+                grid_in = fs_bucket.open_upload_stream("z")
+                grid_in.write(json.dumps(response))
+                grid_in.close()
+
+		db.cached_results.insert_one({'function':view_func.__name__, 'parameters':[request] + list(args), 'grid_id':ObjectId(grid_in._id), 'kwargs':kwargs})
 
 	client.close()
         return response
