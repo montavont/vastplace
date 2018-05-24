@@ -56,5 +56,6 @@ urlpatterns = [
     url(r'delete/(?P<fileId>\w+)$', views.delete, name='delete'),
     url(r'download/(?P<fileId>\w+)$', views.download, name='download'),
     url(r'details/(?P<fileId>\w+)$', views.viewdetails, name='details'),
+    url(r'data/(?P<fileId>\w+)$', views.viewdata, name='data'),
     url(r'details/(?P<fileIds>[-\w]+)$', views.viewmultipledetails, name='multipledetails'),
 ] + rest_patterns

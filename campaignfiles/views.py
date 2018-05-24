@@ -140,12 +140,12 @@ def stored_files(request):
             if 'sourceTypes' in traceFile.metadata:
                 types = ','.join([t for t in traceFile.metadata['sourceTypes']])
             responseData['fileList'].append(
-            {
+                {
                     'id':traceFile._id,
                     "filename":traceFile.filename,
                     "length":traceFile.length,
-                    "types":types,
-                    }
+                    "types":types
+                }
             )
 
         client.close()
@@ -180,7 +180,28 @@ def delete(request, fileId):
 
 
 
+def viewdata(request, fileId):
+        client = database.getClient()
+        file_db = client.trace_database
+        fs = GridFS(file_db)
+        traceFile = fs.get(ObjectId(fileId))
 
+        point_db = client.point_database
+
+        trace_types = []
+        if 'sourceTypes' in traceFile.metadata:
+                trace_types = traceFile.metadata['sourceTypes']
+        all_types = SourceType.objects.all()
+        analyzers = []
+
+        for t in all_types:
+                if t.sourceType in trace_types:
+                        _module = importlib.import_module(t.module + ".views")
+                        _function = getattr(_module, "view_data")
+                        analyzers.append(_function)
+
+
+        return analyzers[0](request, ObjectId(fileId))
 
 def viewdetails(request, fileId):
         responseData = {'id':fileId}
