@@ -40,5 +40,5 @@ from django.db import models
 
 class SourceType(models.Model):
 	sourceType = models.CharField(max_length=30, unique=True)
-	parsingModule = models.CharField(max_length=64)
+	module = models.CharField(max_length=64)
 	parserClass = models.CharField(max_length=64)

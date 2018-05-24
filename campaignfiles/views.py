@@ -114,7 +114,7 @@ def SourceProcessingProcess(fileId):
 
         for t in all_types:
                 if t.sourceType in trace_types:
-                        _module = importlib.import_module(t.parsingModule)
+                        _module = importlib.import_module(t.module + ".parsing")
                         _class = getattr(_module, t.parserClass)
                         parsers.append(_class(fileId))
 
