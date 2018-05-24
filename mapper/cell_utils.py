@@ -41,7 +41,6 @@ import numpy as np
 
 from storage import database
 from mapper.utils import meterDist, osm_latlon_to_tile_number, osm_get_streets_for_tiles
-from centraldb.decorators import cached_call
 
 
 #given a list of points (a, b, c), returns [(a, b), (b, c)]
@@ -206,7 +205,6 @@ def generateInterpolatedCells(cell_couple):
     return actual_retval
 
 
-#@cached_call
 def get_cells_for_source(src_id, sensorType, osm_zoom, cell_interpolation_function):
     client = database.getClient()
     db = client.trace_database

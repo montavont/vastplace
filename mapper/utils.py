@@ -193,6 +193,7 @@ def osm_get_streets(lat_min, lon_min, lat_max, lon_max):
     osm_xml = osm_get_raw_data_by_bounding_box(lat_min, lon_min, lat_max, lon_max)
     return extract_roads_from_osm_xml(osm_xml)
 
+@cached_call
 def osm_get_streets_for_source(src_id, osm_zoom):
     client = database.getClient()
     db = client.trace_database
@@ -273,6 +274,7 @@ def osm_get_intersections_for_tiles(target_tiles, osm_zoom):
 
     return retval
 
+@cached_call
 def osm_get_intersections_for_source(src_id, osm_zoom):
     client = database.getClient()
     db = client.trace_database
