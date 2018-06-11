@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/tkerdonc/vastplace.svg?branch=master)](https://travis-ci.org/tkerdonc/vastplace)[![Coverage Status](https://coveralls.io/repos/github/tkerdonc/vastplace/badge.svg?branch=master)](https://coveralls.io/github/tkerdonc/vastplace?branch=master)
 
-# Project Title
+# vastplace
 
 vastplace stands for Visualizer Analyzer and STorage PLatform for Campaigns and Experiments. Its purpose is to help the handling of experiment files when running a warwalking measurement campaign. It provide tools to analyse a list of geolocalized sensor values from one or more experiments, using geographic features to correct imperfect device localization. It is based on the django framework in order to provide web access to its tools. It also interfaces with Spark in order to provide clustered computation.
 
