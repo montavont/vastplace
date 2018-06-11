@@ -15,6 +15,8 @@ virtualenv vastenv
 cd vastenv
 source bin/activate
 git clone https://github.com/tkerdonc/vastplace.git
+cd vastplace
+pip install -r requirements.txt
 ```
 
 ### Running the tests
