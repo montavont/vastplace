@@ -36,12 +36,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @author Nicolhas Delvoye
 @author Tristan Rieu
 @author Téva Vanouche
+@author Tanguy Kerdoncuff
 """
 
 from django.conf.urls import url
+from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import views
 
+
+rest_patterns = [
+    url(r'modules$', views.installed_modules, name='Installed modules'),
+]
+
+rest_patterns = format_suffix_patterns(rest_patterns)
+
 urlpatterns = [
     url(r'^$', views.menu, name='menu'),
-]
+] + rest_patterns

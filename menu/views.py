@@ -39,12 +39,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from __future__ import unicode_literals
 
+from django.conf import settings
+from django.utils.module_loading import import_module
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
+
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
 
 #from centraldb.urls import urlpatterns
 
 # Create your views here.
 def menu(request):
 	JsonResponse(['Accueil', 'CampaignFiles', 'MobileLora', 'Login'], safe=False)
+
+@api_view(['GET'])
+def installed_modules(request):
+    responseData = {}
+
+    for appname in settings.INSTALLED_APPS:
+        app = import_module(appname)
+        if hasattr(app, 'vastplace_module_name') and hasattr(app, 'vastplace_module_index_url'):
+            responseData[app.vastplace_module_name] = app.vastplace_module_index_url
+
+    return Response(responseData, status=status.HTTP_200_OK)
