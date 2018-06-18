@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from django.test import TestCase
 
-from cell_utils import pointsToSegList, generateCells
+from .cell_utils import pointsToSegList, generateCells
 
 
 class cell_utils_tests(TestCase):

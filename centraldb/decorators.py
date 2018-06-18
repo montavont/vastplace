@@ -45,24 +45,24 @@ from storage import database
 
 def cached_call(view_func):
     def _decorator(request, *args, **kwargs):
-	client = database.getClient()
-	db = client.centraldb
+        client = database.getClient()
+        db = client.centraldb
         response = None
 
-	cached_func_call =  db.cached_results.find_one({'function':view_func.__name__, 'parameters':[request] + list(args), 'kwargs':kwargs})
-	if cached_func_call is not None and 'grid_id' in cached_func_call:
+        cached_func_call =  db.cached_results.find_one({'function':view_func.__name__, 'parameters':[request] + list(args), 'kwargs':kwargs})
+        if cached_func_call is not None and 'grid_id' in cached_func_call:
                 fs = GridFS(db)
                 response = json.loads(fs.get(ObjectId(cached_func_call['grid_id'])).read())
-	else:
+        else:
                 fs_bucket = GridFSBucket(db)
-	        response = view_func(request, *args, **kwargs)
+                response = view_func(request, *args, **kwargs)
                 grid_in = fs_bucket.open_upload_stream("z")
                 grid_in.write(json.dumps(response))
                 grid_in.close()
 
-		db.cached_results.insert_one({'function':view_func.__name__, 'parameters':[request] + list(args), 'grid_id':ObjectId(grid_in._id), 'kwargs':kwargs})
+                db.cached_results.insert_one({'function':view_func.__name__, 'parameters':[request] + list(args), 'grid_id':ObjectId(grid_in._id), 'kwargs':kwargs})
 
-	client.close()
+        client.close()
         return response
 
     return wraps(view_func)(_decorator)

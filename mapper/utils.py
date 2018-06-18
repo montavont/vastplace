@@ -37,7 +37,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from bs4 import BeautifulSoup
 import math
 import pycurl
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from gridfs import GridFS
 from bson.objectid import ObjectId
 
@@ -73,7 +76,7 @@ def point_projection_on_line(p, seg, testSegmentEnds=False):
 	lensq21 = dx21*dx21 + dy21*dy21
         #Check for degenerate segment
 	if lensq21 == 0:
-	    return (x1, y1)
+            return (x1, y1)
 
 	u = (x3-x1)*dx21 + (y3-y1)*dy21
 	u = u / float(lensq21)
@@ -82,18 +85,18 @@ def point_projection_on_line(p, seg, testSegmentEnds=False):
 	y = y1+ u * dy21
 
 	if testSegmentEnds:
-	    if u < 0:
-	        x,y = x1,y1
-	    elif u >1:
-	        x,y = x2,y2
+            if u < 0:
+                x,y = x1,y1
+            elif u >1:
+                x,y = x2,y2
 
 	return (x,y)
 
 def point_distance_to_line(p, seg, testSegmentEnds=False):
-	"""
-	Distance in meters of a point to a line
+        """
+        Distance in meters of a point to a line
         testSegmentEnds limits the projection to the segment, if False, the whole line is used
-	"""
+        """
         projection = point_projection_on_line(p, seg, testSegmentEnds)
         return meterDist(p, projection)
 
