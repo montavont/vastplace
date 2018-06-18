@@ -42,11 +42,9 @@ from __future__ import unicode_literals
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
-from pprint import pprint
 
 #from centraldb.urls import urlpatterns
 
 # Create your views here.
 def menu(request):
-	#return HttpResponse(pprint(urlpatterns))
 	JsonResponse(['Accueil', 'CampaignFiles', 'MobileLora', 'Login'], safe=False)

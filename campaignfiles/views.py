@@ -283,35 +283,35 @@ def edit(request, fileId):
 @api_view(['GET'])
 def trace_count (request):
 
-	client = database.getClient()
-	fs = GridFS(client.trace_database)
-	count = fs.find().count()
-	return Response(count, status=status.HTTP_200_OK)
+        client = database.getClient()
+        fs = GridFS(client.trace_database)
+        count = fs.find().count()
+        return Response(count, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def total_size (request):
 
         size = 0
-	client = database.getClient()
-	fs = GridFS(client.trace_database)
+        client = database.getClient()
+        fs = GridFS(client.trace_database)
         for traceFile in fs.find():
             size += traceFile.length
 
-	return Response(size, status=status.HTTP_200_OK)
+        return Response(size, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def total_size_kb (request):
 
         size = 0
-	client = database.getClient()
-	fs = GridFS(client.trace_database)
+        client = database.getClient()
+        fs = GridFS(client.trace_database)
         for traceFile in fs.find():
             size += traceFile.length
 
-	return Response(size / 1000, status=status.HTTP_200_OK)
+        return Response(size / 1000, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def event_count (request):
-	client = database.getClient()
+        client = database.getClient()
         event_count = client.point_database.sensors.find().count()
-	return Response(event_count, status=status.HTTP_200_OK)
+        return Response(event_count, status=status.HTTP_200_OK)
