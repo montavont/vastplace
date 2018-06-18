@@ -57,21 +57,35 @@ def pointsToSegList(pts):
 
 def generateCells(inp, osm_zoom):
 	retval = []
-	start, end = inp
 
-	points = []
+        if len(inp) == 2:
+            # Always sort the two input points by latitude then longitude
+            # This ways, a given segment always generates the same cells, whatever the order
+            if inp[0][0] != inp[1][0]:
+                start = min(inp, key = lambda x : x[0])
+                end = max(inp, key = lambda x : x[0])
+            else:
+                start = min(inp, key = lambda x : x[1])
+                end = max(inp, key = lambda x : x[1])
 
-	dist = int(meterDist(start, end))
+            points = []
 
-	# Place cell every meter on the segment.
-	for i in range(dist):
-		x = (float(i) * start[0] + float(dist - i) * end[0]) / dist
-		y = (float(i) * start[1] + float(dist - i) * end[1]) / dist
+	    dist = int(meterDist(start, end))
 
-		tile = osm_latlon_to_tile_number(x, y, osm_zoom)
+            #If the two points are closer than 1 meter ( the cell size), return a single cell
+            if dist < 1:
+        	tile = osm_latlon_to_tile_number(start[0], start[1], osm_zoom)
+		retval.append({"gps":start, "tile":tile, "segment":(start[0], start[1], end[0], end[1])})
+            else:
+        	    # Place cell every meter on the segment.
+        	    for i in range(dist):
+	        	x = (float(i) * start[0] + float(dist - i) * end[0]) / dist
+		        y = (float(i) * start[1] + float(dist - i) * end[1]) / dist
 
-                #Store segment as a 4-tuple (x1, y1, x2, y2)
-		retval.append({"gps":(x, y), "tile":tile, "segment":(start[0], start[1], end[0], end[1])})
+        		tile = osm_latlon_to_tile_number(x, y, osm_zoom)
+
+                        #Store segment as a 4-tuple (x1, y1, x2, y2)
+		        retval.append({"gps":(x, y), "tile":tile, "segment":(start[0], start[1], end[0], end[1])})
 
 	return retval
 
