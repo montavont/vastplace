@@ -36,15 +36,69 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from django.test import TestCase
 
+from .cell_utils import pointsToSegList, generateCells
+
+
 class cell_utils_tests(TestCase):
     def test_pointsToSegList(self):
         """
         Tests that a list of points is converted to a list of segments
         """
+        points = [(0, 0), (1, 1), (2, 1), (10, 2.5)]
+        segments = pointsToSegList(points)
+
+        assert(len(segments) == 3)
+        assert(((0, 0), (1, 1)) in segments)
+        assert(((1, 1), (2, 1)) in segments)
+        assert(((2, 1), (10, 2.5)) in segments)
+
+    def test_empty_pointsToSegList(self):
+        """
+        Tests that an empty list of points is converted to an empty list of segments
+        """
+        points = []
+        segments = pointsToSegList(points)
+        assert(len(segments) == 0)
+
     def test_generateCells(self):
         """
-        Tests that cells are generated between two points
+        Tests that cells are generated each meter between two points
+        The following two test points are separated by ten meters.
+            47.09749,-1.26681
+            47.09748,-1.26666
         """
+
+        start = (47.09749,-1.26681)
+        stop = (47.09748,-1.26666)
+
+        cells = generateCells((start, stop), 17)
+
+        # Assert for one cell generated every meters (starting with meter 0)
+        assert(len(cells)) == 11
+
+        reverse_cells = generateCells((stop, start), 17)
+        # Assert that point order does not impact the returned cells
+
+        reverse_cells_gps = [u['gps'] for u in reverse_cells]
+        cells_gps = [u['gps'] for u in cells]
+
+        for cell in cells:
+            assert cell['gps'] in reverse_cells_gps
+        for cell in reverse_cells:
+            assert cell['gps'] in cells_gps
+
+    def test_empty_generateCells(self):
+        null_cells = generateCells((), 17)
+        assert(len(null_cells) == 0)
+
+
+    def test_single_generateCells(self):
+        start = (47.09749,-1.26681)
+        single_cells = generateCells((start, start), 17)
+        assert(len(single_cells) == 1)
+        assert(single_cells[0]['gps'] == start)
+
+
     def test_sensorValueToTile(self):
         """
         Tests that a sensor value is associated to a tile based on its gps data

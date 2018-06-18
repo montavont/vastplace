@@ -56,24 +56,38 @@ def pointsToSegList(pts):
 	return retval
 
 def generateCells(inp, osm_zoom):
-	retval = []
-	start, end = inp
+        retval = []
 
-	points = []
+        if len(inp) == 2:
+            # Always sort the two input points by latitude then longitude
+            # This ways, a given segment always generates the same cells, whatever the order
+            if inp[0][0] != inp[1][0]:
+                start = min(inp, key = lambda x : x[0])
+                end = max(inp, key = lambda x : x[0])
+            else:
+                start = min(inp, key = lambda x : x[1])
+                end = max(inp, key = lambda x : x[1])
 
-	dist = int(meterDist(start, end))
+            points = []
 
-	# Place cell every meter on the segment.
-	for i in range(dist):
-		x = (float(i) * start[0] + float(dist - i) * end[0]) / dist
-		y = (float(i) * start[1] + float(dist - i) * end[1]) / dist
+            dist = int(meterDist(start, end))
 
-		tile = osm_latlon_to_tile_number(x, y, osm_zoom)
+            #If the two points are closer than 1 meter ( the cell size), return a single cell
+            if dist < 1:
+                tile = osm_latlon_to_tile_number(start[0], start[1], osm_zoom)
+                retval.append({"gps":start, "tile":tile, "segment":(start[0], start[1], end[0], end[1])})
+            else:
+                    # Place cell every meter on the segment.
+                    for i in range(dist):
+                        x = (float(i) * start[0] + float(dist - i) * end[0]) / dist
+                        y = (float(i) * start[1] + float(dist - i) * end[1]) / dist
 
-                #Store segment as a 4-tuple (x1, y1, x2, y2)
-		retval.append({"gps":(x, y), "tile":tile, "segment":(start[0], start[1], end[0], end[1])})
+                        tile = osm_latlon_to_tile_number(x, y, osm_zoom)
 
-	return retval
+                        #Store segment as a 4-tuple (x1, y1, x2, y2)
+                        retval.append({"gps":(x, y), "tile":tile, "segment":(start[0], start[1], end[0], end[1])})
+
+        return retval
 
 def sensorValueToTile(inp, osm_zoom):
     (lat, lon), value, timestamp = inp
@@ -155,33 +169,33 @@ def generateInterpolatedCells(cell_couple):
     )
 
     if segment_equality(segment_1, segment_2):
-	dist = int(meterDist(cell_1['cell_gps'], cell_2['cell_gps']))
+        dist = int(meterDist(cell_1['cell_gps'], cell_2['cell_gps']))
         # Place cell every meter between the current and previous points on the segment.
-	for i in range(1,dist - 1):
-	    x = (float(i) * cell_1['cell_gps'][0] + float(dist - i) * cell_2['cell_gps'][0]) / dist
-	    y = (float(i) * cell_1['cell_gps'][1] + float(dist - i) * cell_2['cell_gps'][1]) / dist
+        for i in range(1,dist - 1):
+            x = (float(i) * cell_1['cell_gps'][0] + float(dist - i) * cell_2['cell_gps'][0]) / dist
+            y = (float(i) * cell_1['cell_gps'][1] + float(dist - i) * cell_2['cell_gps'][1]) / dist
             retval.append({
                 'cell_gps':(x, y),
             })
-	else:
-	    # Check for connected segments (TODO : further away connections ?)
-	    # Since segments are different because of the comparison above,
+        else:
+            # Check for connected segments (TODO : further away connections ?)
+            # Since segments are different because of the comparison above,
             # only one match maximum can happen
-	    for pt1 in segment_1:
-	        for pt2 in segment_2:
-		    if pt1 == pt2:
+            for pt1 in segment_1:
+                for pt2 in segment_2:
+                    if pt1 == pt2:
                         #Segments are connected, place cells every meters between cell_1 and the intersection point, and between cell_2 and the intersection point
-			dist = int(meterDist(cell_1['cell_gps'], pt1))
+                        dist = int(meterDist(cell_1['cell_gps'], pt1))
                         for i in range(1,dist): # This also matches the intersetcion
-			    x = (float(dist - i) * cell_1['cell_gps'][0] + float(i) * pt1[0]) / dist
-			    y = (float(dist - i) * cell_1['cell_gps'][1] + float(i) * pt1[1]) / dist
+                            x = (float(dist - i) * cell_1['cell_gps'][0] + float(i) * pt1[0]) / dist
+                            y = (float(dist - i) * cell_1['cell_gps'][1] + float(i) * pt1[1]) / dist
                             retval.append({
                                 'cell_gps':(x, y),
                             })
-			dist = int(meterDist(pt2, cell_2['cell_gps']))
+                        dist = int(meterDist(pt2, cell_2['cell_gps']))
                         for i in range(1,dist - 1): # This does not
-			    x = (float(dist - i) * pt2[0] + float(i) * cell_2['cell_gps'][0]) / dist
-			    y = (float(dist - i) * pt2[1] + float(i) * cell_2['cell_gps'][1]) / dist
+                            x = (float(dist - i) * pt2[0] + float(i) * cell_2['cell_gps'][0]) / dist
+                            y = (float(dist - i) * pt2[1] + float(i) * cell_2['cell_gps'][1]) / dist
                             retval.append({
                                 'cell_gps':(x, y),
                             })
@@ -218,12 +232,12 @@ def get_cells_for_source(src_id, sensorType, osm_zoom, cell_interpolation_functi
     GPS = (-1,-1)
     sensor_points = []
     for point in point_collection:
-    	if point['sensorType'] == 'GPS':
+        if point['sensorType'] == 'GPS':
             GPS = point['sensorValue']
             gps_points.append(GPS)
-	elif point['sensorType'] == sensorType:
-	    if GPS != (-1, -1):
-	        sensor_points.append([GPS, point['sensorValue'], point['vTimestamp']])
+        elif point['sensorType'] == sensorType:
+            if GPS != (-1, -1):
+                sensor_points.append([GPS, point['sensorValue'], point['vTimestamp']])
 
     target_tiles = set([osm_latlon_to_tile_number(lat, lon, osm_zoom) for lat, lon in gps_points])
     streets = osm_get_streets_for_tiles(target_tiles, osm_zoom)
@@ -274,7 +288,7 @@ def getMergedCells(traceType, sensorType, osm_zoom, average_cell_values = True, 
 
 
     for traceFile in fs.find():
-	if 'sourceTypes' in traceFile.metadata and traceType in traceFile.metadata['sourceTypes']:
+        if 'sourceTypes' in traceFile.metadata and traceType in traceFile.metadata['sourceTypes']:
             src_cells = get_cells_for_source(traceFile._id, sensorType, osm_zoom, cell_interpolation_function)
             for gps, values in src_cells:
                 if tuple(gps) not in cell_values:
