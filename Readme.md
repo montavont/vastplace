@@ -33,6 +33,10 @@ The platform is ran as any django project
 python manage.py runserver
 ```
 
+### Adding modules
+
+This platform needs experiment specific modules in order to be of any use. Such modules specify the data format and what treatment they want to apply. Have a look at the [vastplace_example_module](https://github.com/tkerdonc/vastplace_example_module) for installation instruction, and details on implementing your own module.
+
 ## License
 
 This project is licensed under the BSD 3 License - see the [LICENSE.md](LICENSE.md) file for details
